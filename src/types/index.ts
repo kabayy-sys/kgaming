@@ -3,7 +3,7 @@
 // ============================================
 
 // ---- Device Types ----
-export type DeviceCategory = 'Regular' | 'VIP 1' | 'VIP 2';
+export type DeviceCategory = 'PS5' | 'VIP' | 'Regular' | 'PC';
 
 export type DeviceStatus = 'Ready' | 'In Use' | 'Booked' | 'Pending' | 'Maintenance';
 

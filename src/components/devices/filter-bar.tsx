@@ -6,9 +6,10 @@ import type { DeviceCategory } from '@/types';
 
 const filters: { value: DeviceCategory | 'all'; label: string; icon: string }[] = [
   { value: 'all', label: 'Semua', icon: '📋' },
+  { value: 'PS5', label: 'PS5', icon: '🎮' },
+  { value: 'VIP', label: 'VIP', icon: '⭐' },
   { value: 'Regular', label: 'Reguler', icon: '🖥️' },
-  { value: 'VIP 1', label: 'VIP 1', icon: '⭐' },
-  { value: 'VIP 2', label: 'VIP 2', icon: '🌟' },
+  { value: 'PC', label: 'PC', icon: '💻' },
 ];
 
 export function FilterBar() {

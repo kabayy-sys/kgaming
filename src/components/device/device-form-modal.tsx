@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { X, Save } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import type { Device, DeviceCategory, DeviceStatus } from '@/types';
@@ -14,7 +14,7 @@ interface DeviceFormModalProps {
   actorId?: string;
 }
 
-const CATEGORIES: DeviceCategory[] = ['Regular', 'VIP 1', 'VIP 2'];
+const CATEGORIES: DeviceCategory[] = ['PS5', 'VIP', 'Regular', 'PC'];
 const STATUSES: DeviceStatus[] = ['Ready', 'In Use', 'Booked', 'Pending', 'Maintenance'];
 
 export function DeviceFormModal({ device, onClose, onSaved, actorName, actorId }: DeviceFormModalProps) {
@@ -38,15 +38,20 @@ export function DeviceFormModal({ device, onClose, onSaved, actorName, actorId }
       const facilities = facilitiesStr.split(',').map(f => f.trim()).filter(Boolean);
 
       if (isEdit && device) {
-        await supabase.from('devices').update({
-          name: name.trim(),
-          category,
-          status,
-          hourly_price: parseInt(hourlyPrice),
-          facilities,
-          notes: notes || null,
-          updated_at: new Date().toISOString(),
-        }).eq('id', device.id);
+        const { error: updateError } = await supabase
+          .from('devices')
+          .update({
+            name: name.trim(),
+            category,
+            status,
+            hourly_price: parseInt(hourlyPrice),
+            facilities,
+            notes: notes || null,
+            updated_at: new Date().toISOString(),
+          })
+          .eq('id', device.id);
+
+        if (updateError) throw updateError;
 
         await supabase.from('activity_logs').insert({
           action: 'device_edited',
@@ -57,14 +62,20 @@ export function DeviceFormModal({ device, onClose, onSaved, actorName, actorId }
           details: { device_name: name.trim(), category, hourly_price: parseInt(hourlyPrice) },
         });
       } else {
-        const { data: newDevice } = await supabase.from('devices').insert({
-          name: name.trim(),
-          category,
-          status: 'Ready',
-          hourly_price: parseInt(hourlyPrice),
-          facilities,
-          notes: notes || null,
-        }).select().single();
+        const { data: newDevice, error: insertError } = await supabase
+          .from('devices')
+          .insert({
+            name: name.trim(),
+            category,
+            status: 'Ready',
+            hourly_price: parseInt(hourlyPrice),
+            facilities,
+            notes: notes || null,
+          })
+          .select()
+          .single();
+
+        if (insertError) throw insertError;
 
         await supabase.from('activity_logs').insert({
           action: 'device_created',
@@ -100,11 +111,13 @@ export function DeviceFormModal({ device, onClose, onSaved, actorName, actorId }
           </div>
 
           <div className="space-y-4">
+            {/* Nama */}
             <div>
               <label className="block text-xs font-medium text-gaming-400 mb-1.5">Nama Device</label>
-              <input type="text" value={name} onChange={(e) => setName(e.target.value)} placeholder="PS4 Regular 1" className="input" />
+              <input type="text" value={name} onChange={(e) => setName(e.target.value)} placeholder="PS5 VIP 1" className="input" />
             </div>
 
+            {/* Kategori */}
             <div>
               <label className="block text-xs font-medium text-gaming-400 mb-1.5">Kategori</label>
               <div className="flex gap-2">
@@ -119,6 +132,7 @@ export function DeviceFormModal({ device, onClose, onSaved, actorName, actorId }
               </div>
             </div>
 
+            {/* Status */}
             {isEdit && (
               <div>
                 <label className="block text-xs font-medium text-gaming-400 mb-1.5">Status</label>
@@ -135,21 +149,25 @@ export function DeviceFormModal({ device, onClose, onSaved, actorName, actorId }
               </div>
             )}
 
+            {/* Harga */}
             <div>
               <label className="block text-xs font-medium text-gaming-400 mb-1.5">Harga per Jam (Rp)</label>
               <input type="number" value={hourlyPrice} onChange={(e) => setHourlyPrice(e.target.value)} placeholder="25000" className="input" min="0" />
             </div>
 
+            {/* Fasilitas */}
             <div>
               <label className="block text-xs font-medium text-gaming-400 mb-1.5">
                 Fasilitas <span className="text-gaming-600">(pisahkan dengan koma)</span>
               </label>
-              <input type="text" value={facilitiesStr} onChange={(e) => setFacilitiesStr(e.target.value)} placeholder="PS4, Monitor 24" className="input" />
+              <input type="text" value={facilitiesStr} onChange={(e) => setFacilitiesStr(e.target.value)} placeholder="4K TV, Wireless Controller, Headset" className="input" />
             </div>
 
+            {/* Catatan */}
             <div>
               <label className="block text-xs font-medium text-gaming-400 mb-1.5">Catatan <span className="text-gaming-600">(opsional)</span></label>
-              <textarea value={notes} onChange={(e) => setNotes(e.target.value)} placeholder="..." className="input min-h-[70px] resize-none" rows={2} />
+              <textarea value={notes} onChange={(e) => setNotes(e.target.value)} placeholder="..."
+                className="input min-h-[70px] resize-none" rows={2} />
             </div>
 
             {error && (

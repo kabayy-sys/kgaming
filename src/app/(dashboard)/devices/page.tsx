@@ -13,7 +13,7 @@ import { Plus, Pencil, Archive, Monitor, Search } from 'lucide-react';
 
 export const dynamic = 'force-dynamic';
 
-const CATEGORIES: (DeviceCategory | 'all')[] = ['all', 'Regular', 'VIP 1', 'VIP 2'];
+const CATEGORIES: (DeviceCategory | 'all')[] = ['all', 'PS5', 'VIP', 'Regular', 'PC'];
 const STATUS_COLORS: Record<DeviceStatus, string> = {
   Ready: 'text-emerald-400',
   'In Use': 'text-amber-400',
@@ -61,16 +61,12 @@ export default function DevicesPage() {
     fetchDevices();
   };
 
-  const deviceCount = devices.filter(d => !d.is_archived).length;
-  const regularCount = devices.filter(d => d.category === 'Regular' && !d.is_archived).length;
-  const vip1Count = devices.filter(d => d.category === 'VIP 1' && !d.is_archived).length;
-  const vip2Count = devices.filter(d => d.category === 'VIP 2' && !d.is_archived).length;
-
-  const categoryCounts: Record<string, number> = {
-    all: deviceCount,
-    Regular: regularCount,
-    'VIP 1': vip1Count,
-    'VIP 2': vip2Count,
+  const categoryCounts = {
+    all: devices.filter(d => !d.is_archived).length,
+    PS5: devices.filter(d => d.category === 'PS5' && !d.is_archived).length,
+    VIP: devices.filter(d => d.category === 'VIP' && !d.is_archived).length,
+    Regular: devices.filter(d => d.category === 'Regular' && !d.is_archived).length,
+    PC: devices.filter(d => d.category === 'PC' && !d.is_archived).length,
   };
 
   if (authLoading) {
