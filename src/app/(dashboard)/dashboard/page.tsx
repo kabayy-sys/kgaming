@@ -8,20 +8,28 @@ import { useBookingStore } from '@/stores/booking-store';
 import { BottomNav } from '@/components/layout/bottom-nav';
 import { DeviceCard } from '@/components/devices/device-card';
 import { FilterBar } from '@/components/devices/filter-bar';
-import { cn, statusColors, getTodayDate } from '@/lib/utils';
+import { cn, getTodayDate } from '@/lib/utils';
 import type { Device, DashboardStats, DeviceStatus } from '@/types';
 import { supabase } from '@/lib/supabase';
-import {
-  Monitor,
-  Users,
-  CalendarCheck,
-  Clock,
-  LogOut,
-  ChevronRight,
-  Activity,
-} from 'lucide-react';
+import { Monitor, CalendarCheck, Clock, LogOut } from 'lucide-react';
 
 export const dynamic = 'force-dynamic';
+
+const quickLinks = [
+  { href: '/bookings', label: 'Bookings', desc: 'Kelola pemesanan', icon: CalendarCheck },
+  { href: '/activity', label: 'Activity', desc: 'Lihat aktivitas', icon: Clock },
+];
+
+function StatCard({ label, value, color }: { label: string; value: number; color: string }) {
+  return (
+    <div className="card p-3.5 lg:p-4">
+      <div className="flex items-center justify-between">
+        <span className="text-xs text-gaming-500">{label}</span>
+        <span className={cn('text-lg font-semibold', color)}>{value}</span>
+      </div>
+    </div>
+  );
+}
 
 export default function DashboardPage() {
   const router = useRouter();
@@ -69,7 +77,10 @@ export default function DashboardPage() {
       Pending: 'Ready',
       Maintenance: 'Ready',
     };
-    await updateDeviceStatus(device.id, nextStatus[device.status]);
+
+    const newStatus = nextStatus[device.status];
+    await updateDeviceStatus(device.id, newStatus);
+
     await supabase.from('activity_logs').insert({
       action: 'device_status_change',
       actor_id: user?.id,
@@ -78,7 +89,7 @@ export default function DashboardPage() {
       target_id: device.id,
       details: {
         from_status: device.status,
-        to_status: nextStatus[device.status],
+        to_status: newStatus,
         device_name: device.name,
       },
     });
@@ -91,88 +102,80 @@ export default function DashboardPage() {
 
   if (authLoading) {
     return (
-      <div className="flex min-h-screen items-center justify-center bg-gaming-900">
-        <div className="h-8 w-8 animate-spin rounded-full border-2 border-neon-cyan border-t-transparent" />
+      <div className="flex min-h-screen items-center justify-center bg-gaming-950">
+        <div className="h-5 w-5 animate-spin rounded-full border-2 border-emerald-400 border-t-transparent" />
       </div>
     );
   }
 
   return (
-    <main className="min-h-screen bg-gaming-900 pb-24">
-      {/* Header */}
-      <header className="sticky top-0 z-40 border-b border-gaming-500/20 bg-gaming-900/95 backdrop-blur-xl">
-        <div className="mx-auto max-w-lg px-4 py-4">
+    <main className="min-h-screen bg-gaming-950 pb-20 lg:pb-24">
+      <header className="page-header">
+        <div className="app-container py-3 lg:py-4">
           <div className="flex items-center justify-between">
             <div>
               <div className="flex items-center gap-2">
-                <h1 className="text-lg font-bold text-gaming-50">Dashboard</h1>
+                <h1 className="text-base lg:text-lg font-semibold text-gaming-100">Dashboard</h1>
                 {user && (
                   <span className={cn(
-                    'badge text-[10px]',
-                    user.role === 'owner' ? 'bg-neon-purple/20 text-neon-purple' : 'bg-neon-cyan/20 text-neon-cyan'
+                    'text-[10px] font-medium px-2 py-0.5 rounded-md border',
+                    user.role === 'owner'
+                      ? 'bg-violet-500/10 text-violet-400 border-violet-500/20'
+                      : 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20'
                   )}>
                     {user.role === 'owner' ? 'Owner' : user.shift === 'morning' ? 'Pagi' : 'Malam'}
                   </span>
                 )}
               </div>
-              <p className="mt-0.5 text-xs text-gaming-500">{getTodayDate()}</p>
+              <p className="text-xs text-gaming-500 mt-0.5">{getTodayDate()}</p>
             </div>
-            <button onClick={handleLogout} className="btn-ghost px-3 py-2 text-xs">
-              <LogOut className="h-4 w-4" />
-              Logout
+            <button onClick={handleLogout} className="btn-ghost btn-sm">
+              <LogOut className="h-3.5 w-3.5" />
+              Keluar
             </button>
           </div>
         </div>
       </header>
 
-      <div className="mx-auto max-w-lg space-y-6 px-4 py-4">
+      <div className="app-container pt-4 space-y-5">
         {/* Welcome */}
         {user && (
-          <div className="glass-card rounded-2xl p-4">
-            <p className="text-sm text-gaming-400">Welcome back,</p>
-            <p className="text-lg font-bold text-gaming-50">{user.display_name}</p>
+          <div className="card p-4">
+            <p className="text-xs text-gaming-500">Selamat datang,</p>
+            <p className="text-base font-semibold text-gaming-100 mt-0.5">{user.display_name}</p>
           </div>
         )}
 
-        {/* Quick Stats */}
+        {/* Stats Grid */}
         {stats && (
-          <div className="grid grid-cols-2 gap-3">
-            <StatCard
-              icon={<Monitor className="h-5 w-5" />}
-              label="In Use"
-              value={stats.devices_in_use}
-              color="text-orange-400"
-              bg="bg-orange-500/10"
-            />
-            <StatCard
-              icon={<Monitor className="h-5 w-5" />}
-              label="Ready"
-              value={stats.devices_ready}
-              color="text-emerald-400"
-              bg="bg-emerald-500/10"
-            />
-            <StatCard
-              icon={<CalendarCheck className="h-5 w-5" />}
-              label="Pending"
-              value={stats.pending_bookings}
-              color="text-yellow-400"
-              bg="bg-yellow-500/10"
-            />
-            <StatCard
-              icon={<Clock className="h-5 w-5" />}
-              label="Active Bookings"
-              value={stats.active_bookings}
-              color="text-purple-400"
-              bg="bg-purple-500/10"
-            />
+          <div className="grid grid-cols-2 lg:grid-cols-4 gap-2.5">
+            <StatCard label="Ready" value={stats.devices_ready} color="text-emerald-400" />
+            <StatCard label="In Use" value={stats.devices_in_use} color="text-amber-400" />
+            <StatCard label="Pending" value={stats.pending_bookings} color="text-yellow-400" />
+            <StatCard label="Maint." value={stats.devices_maintenance} color="text-red-400" />
           </div>
         )}
 
-        {/* Device Management Section */}
+        {/* Quick Links */}
+        <div className="grid grid-cols-2 gap-2.5">
+          {quickLinks.map((link) => (
+            <button
+              key={link.href}
+              onClick={() => router.push(link.href)}
+              className="card card-hover p-3.5 lg:p-4 text-left"
+            >
+              <link.icon className="h-5 w-5 text-emerald-400 mb-2" />
+              <p className="text-sm font-medium text-gaming-200">{link.label}</p>
+              <p className="text-xs text-gaming-500 mt-0.5">{link.desc}</p>
+            </button>
+          ))}
+        </div>
+
+        {/* Device Management */}
         <div>
-          <h2 className="section-header">Device Status</h2>
+          <h2 className="text-sm font-semibold text-gaming-200 mb-3">Status Device</h2>
           <FilterBar />
-          <div className="mt-3 space-y-3">
+          <div className="mt-3 space-y-2.5">
             {filteredDevices().map((device) => (
               <DeviceCard
                 key={device.id}
@@ -187,30 +190,5 @@ export default function DashboardPage() {
 
       <BottomNav />
     </main>
-  );
-}
-
-// Stat Card Sub-component
-function StatCard({
-  icon,
-  label,
-  value,
-  color,
-  bg,
-}: {
-  icon: React.ReactNode;
-  label: string;
-  value: number;
-  color: string;
-  bg: string;
-}) {
-  return (
-    <div className={cn('glass-card rounded-2xl p-4', bg)}>
-      <div className="mb-2 flex items-center justify-between">
-        <span className={color}>{icon}</span>
-        <span className="text-2xl font-bold text-gaming-50">{value}</span>
-      </div>
-      <p className="text-xs text-gaming-400">{label}</p>
-    </div>
   );
 }

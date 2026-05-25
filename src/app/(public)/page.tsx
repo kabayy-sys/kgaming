@@ -6,7 +6,7 @@ import { FilterBar } from '@/components/devices/filter-bar';
 import { BookingForm } from '@/components/booking/booking-form';
 import { BottomNav } from '@/components/layout/bottom-nav';
 import { useDeviceStore } from '@/stores/device-store';
-import { cn, getTodayDate } from '@/lib/utils';
+import { getTodayDate } from '@/lib/utils';
 import type { Device } from '@/types';
 
 export const dynamic = 'force-dynamic';
@@ -25,53 +25,45 @@ export default function HomePage() {
   const visibleDevices = filteredDevices();
 
   return (
-    <main className="min-h-screen bg-gaming-900 pb-24">
+    <main className="min-h-screen bg-gaming-950 pb-20 lg:pb-24">
       {/* Header */}
-      <header className="sticky top-0 z-40 border-b border-gaming-500/20 bg-gaming-900/95 backdrop-blur-xl">
-        <div className="mx-auto max-w-lg px-4 py-4">
-          <div className="flex items-center justify-between">
-            <div>
-              <h1 className="text-xl font-bold tracking-wider text-gaming-50" style={{ fontFamily: 'var(--font-display)' }}>
-                K Gaming <span className="text-neon-cyan">XCafe</span>
-              </h1>
-              <p className="mt-0.5 text-xs text-gaming-500">Realtime Device Monitor</p>
-            </div>
-
-            {/* Connection Status */}
-            <div className="flex items-center gap-1.5 rounded-full bg-emerald-500/10 px-3 py-1.5">
-              <span className="status-dot bg-emerald-400 animate-status-pulse" />
+      <header className="page-header">
+        <div className="app-container py-3 lg:py-4">
+          <div className="flex items-center justify-between mb-1">
+            <h1 className="text-lg lg:text-xl font-bold text-gaming-100 tracking-tight">
+              K Gaming <span className="text-emerald-400">XCafe</span>
+            </h1>
+            <div className="flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-emerald-500/8 border border-emerald-500/15">
+              <span className="h-1.5 w-1.5 rounded-full bg-emerald-400" />
               <span className="text-[10px] font-medium text-emerald-400">Live</span>
             </div>
           </div>
 
-          {/* Date + Availability */}
-          <div className="mt-3 flex items-center justify-between">
-            <span className="text-xs text-gaming-400">{getTodayDate()}</span>
-            <span className="text-xs text-gaming-300">
-              <span className="font-bold text-neon-cyan">{availableCount}</span> devices ready
+          <div className="flex items-center justify-between mt-2">
+            <span className="text-xs text-gaming-500">{getTodayDate()}</span>
+            <span className="text-xs text-gaming-400">
+              <span className="text-emerald-400 font-semibold">{availableCount}</span> tersedia
             </span>
           </div>
 
-          {/* Filter */}
-          <FilterBar />
+          <div className="mt-3">
+            <FilterBar />
+          </div>
         </div>
       </header>
 
-      {/* Device Grid */}
-      <div className="mx-auto max-w-lg px-4 py-4">
+      {/* Device List */}
+      <div className="app-container pt-4 pb-4 space-y-3">
         {isLoading ? (
-          <div className="space-y-4">
+          <div className="space-y-3">
             {[1, 2, 3, 4].map((i) => (
-              <div key={i} className="skeleton h-40 w-full rounded-2xl" />
+              <div key={i} className="h-32 rounded-2xl skeleton" />
             ))}
           </div>
         ) : visibleDevices.length === 0 ? (
-          <div className="flex flex-col items-center justify-center py-20 text-center">
-            <div className="mb-4 text-4xl">🎮</div>
-            <h3 className="text-lg font-bold text-gaming-300">No Devices Found</h3>
-            <p className="mt-1 text-sm text-gaming-500">
-              No devices available in this category
-            </p>
+          <div className="flex flex-col items-center justify-center pt-20 pb-32 text-center">
+            <span className="text-3xl mb-3">🎮</span>
+            <p className="text-sm text-gaming-500">Tidak ada device tersedia</p>
           </div>
         ) : (
           <div className="space-y-3">
@@ -86,7 +78,6 @@ export default function HomePage() {
         )}
       </div>
 
-      {/* Booking Form Modal */}
       {bookingDevice && (
         <BookingForm
           device={bookingDevice}
@@ -94,7 +85,6 @@ export default function HomePage() {
         />
       )}
 
-      {/* Bottom Navigation */}
       <BottomNav />
     </main>
   );

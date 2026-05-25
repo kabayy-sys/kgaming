@@ -4,146 +4,126 @@
 
 @layer base {
   * {
-    @apply border-gaming-500/30;
+    @apply border-gaming-700/50;
   }
 
   html {
-    @apply bg-gaming-900 text-gaming-50 antialiased;
+    @apply bg-gaming-950 text-gaming-100 antialiased;
     -webkit-tap-highlight-color: transparent;
   }
 
   body {
-    @apply min-h-screen bg-gaming-900 font-body;
+    @apply min-h-screen bg-gaming-950 font-body leading-relaxed;
     overscroll-behavior: none;
   }
 
-  /* Mobile tap feedback */
-  * {
-    -webkit-tap-highlight-color: transparent;
-  }
-
-  /* Scrollbar styling */
+  /* Scrollbar - clean minimal */
   ::-webkit-scrollbar {
-    @apply w-1.5;
+    @apply w-1;
   }
-
   ::-webkit-scrollbar-track {
-    @apply bg-gaming-800;
+    @apply bg-transparent;
   }
-
   ::-webkit-scrollbar-thumb {
-    @apply rounded-full bg-gaming-500;
-  }
-
-  ::-webkit-scrollbar-thumb:hover {
-    @apply bg-gaming-400;
+    @apply rounded-full bg-gaming-600;
   }
 }
 
 @layer components {
-  /* Premium Glass Card */
-  .glass-card {
-    @apply border border-gaming-500/20 bg-gaming-800/60 backdrop-blur-xl;
+  /* ---- Card System ---- */
+  .card {
+    @apply rounded-2xl border border-gaming-700/40 bg-gaming-900 shadow-card;
   }
 
-  /* Glowing Effect */
-  .glow-cyan {
-    box-shadow: 0 0 20px theme('colors.neon.cyan'), 0 0 40px theme('colors.neon.cyan' / 0.3);
+  .card-hover {
+    @apply card transition-all duration-200 hover:shadow-card-hover hover:border-gaming-600/50;
   }
 
-  .glow-purple {
-    box-shadow: 0 0 20px theme('colors.neon.purple'), 0 0 40px theme('colors.neon.purple' / 0.3);
+  .card-glass {
+    @apply card bg-gaming-900/80 backdrop-blur-sm;
   }
 
-  .glow-pink {
-    box-shadow: 0 0 20px theme('colors.neon.pink'), 0 0 40px theme('colors.neon.pink' / 0.3);
-  }
-
-  /* Button Base */
+  /* ---- Buttons ---- */
   .btn {
-    @apply inline-flex items-center justify-center gap-2 rounded-xl px-4 py-3 text-sm font-semibold transition-all duration-200 active:scale-95;
+    @apply inline-flex items-center justify-center gap-2 rounded-xl px-4 py-2.5 text-sm font-medium transition-all duration-200 active:scale-[0.98];
   }
 
   .btn-primary {
-    @apply btn bg-neon-cyan text-gaming-900 hover:bg-neon-cyan/90;
+    @apply btn bg-emerald-500 text-white hover:bg-emerald-600 shadow-sm;
   }
 
   .btn-secondary {
-    @apply btn border border-gaming-500/50 bg-gaming-700/50 text-gaming-100 hover:bg-gaming-600/50;
+    @apply btn border border-gaming-600 bg-gaming-800 text-gaming-300 hover:bg-gaming-700 hover:text-gaming-100;
   }
 
   .btn-ghost {
-    @apply btn text-gaming-200 hover:bg-gaming-700/50 hover:text-gaming-50;
+    @apply btn text-gaming-400 hover:bg-gaming-800 hover:text-gaming-200;
   }
 
   .btn-danger {
-    @apply btn bg-status-maintenance/20 text-status-maintenance hover:bg-status-maintenance/30;
+    @apply btn bg-red-500/10 text-red-400 hover:bg-red-500/20;
   }
 
   .btn-success {
-    @apply btn bg-status-ready/20 text-status-ready hover:bg-status-ready/30;
+    @apply btn bg-emerald-500/10 text-emerald-400 hover:bg-emerald-500/20;
   }
 
-  /* Input */
-  .input-field {
-    @apply w-full rounded-xl border border-gaming-500/30 bg-gaming-800/80 px-4 py-3 text-sm text-gaming-50 placeholder:text-gaming-400 focus:border-neon-cyan/50 focus:outline-none focus:ring-1 focus:ring-neon-cyan/30;
+  .btn-sm {
+    @apply px-3 py-1.5 text-xs;
   }
 
-  /* Status Dot */
-  .status-dot {
-    @apply inline-block h-2.5 w-2.5 rounded-full;
+  /* ---- Input ---- */
+  .input {
+    @apply w-full rounded-xl border border-gaming-700 bg-gaming-900 px-4 py-2.5 text-sm text-gaming-100 placeholder:text-gaming-500 focus:border-emerald-500/50 focus:outline-none focus:ring-1 focus:ring-emerald-500/20 transition-colors;
   }
 
-  /* Badge */
+  /* ---- Status Badge ---- */
   .badge {
     @apply inline-flex items-center gap-1.5 rounded-lg px-2.5 py-1 text-xs font-medium;
   }
 
-  /* Section Header */
-  .section-header {
-    @apply mb-4 text-lg font-bold text-gaming-50;
+  .badge-dot {
+    @apply inline-block h-2 w-2 rounded-full;
   }
 
-  /* Interactive Card */
-  .interactive-card {
-    @apply cursor-pointer transition-all duration-200 active:scale-[0.98];
+  /* ---- Section ---- */
+  .section-title {
+    @apply text-base font-semibold text-gaming-200;
   }
 
-  /* Bottom Navigation */
+  /* ---- Status Colors ---- */
+  .status-ready {
+    @apply bg-emerald-500/10 text-emerald-400 border-emerald-500/20;
+  }
+  .status-inUse {
+    @apply bg-amber-500/10 text-amber-400 border-amber-500/20;
+  }
+  .status-booked {
+    @apply bg-violet-500/10 text-violet-400 border-violet-500/20;
+  }
+  .status-pending {
+    @apply bg-yellow-500/10 text-yellow-400 border-yellow-500/20;
+  }
+  .status-maintenance {
+    @apply bg-red-500/10 text-red-400 border-red-500/20;
+  }
+
+  /* ---- Layout Helpers ---- */
+  .app-container {
+    @apply mx-auto w-full max-w-app px-4 lg:max-w-app-lg;
+  }
+
+  .page-header {
+    @apply sticky top-0 z-40 border-b border-gaming-800 bg-gaming-950/90 backdrop-blur-md;
+  }
+
+  /* ---- Bottom Nav ---- */
   .bottom-nav {
-    @apply fixed bottom-0 left-0 right-0 z-50 border-t border-gaming-500/20 bg-gaming-800/95 backdrop-blur-xl;
+    @apply fixed bottom-0 left-0 right-0 z-50 border-t border-gaming-800 bg-gaming-950/95 backdrop-blur-md;
   }
 
-  /* Skeleton Loading */
+  /* ---- Skeleton ---- */
   .skeleton {
-    @apply animate-pulse rounded-lg bg-gaming-700/50;
-  }
-
-  /* Neon Text */
-  .neon-text-cyan {
-    @apply text-neon-cyan;
-    text-shadow: 0 0 10px theme('colors.neon.cyan' / 0.5);
-  }
-
-  .neon-text-purple {
-    @apply text-neon-purple;
-    text-shadow: 0 0 10px theme('colors.neon.purple' / 0.5);
-  }
-}
-
-@layer utilities {
-  /* Hide scrollbar but keep functionality */
-  .no-scrollbar {
-    -ms-overflow-style: none;
-    scrollbar-width: none;
-  }
-
-  .no-scrollbar::-webkit-scrollbar {
-    display: none;
-  }
-
-  /* Safe area padding for mobile */
-  .safe-bottom {
-    padding-bottom: env(safe-area-inset-bottom, 1rem);
+    @apply animate-pulse rounded-xl bg-gaming-800;
   }
 }

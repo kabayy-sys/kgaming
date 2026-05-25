@@ -1,7 +1,6 @@
 'use client';
 
 import { useState } from 'react';
-import { useRouter } from 'next/navigation';
 import { X, Send, Clock, User } from 'lucide-react';
 import { cn, generateWhatsAppMessage, getTodayDate } from '@/lib/utils';
 import type { Device } from '@/types';
@@ -15,11 +14,9 @@ interface BookingFormProps {
 }
 
 export function BookingForm({ device, onClose }: BookingFormProps) {
-  const router = useRouter();
   const [customerName, setCustomerName] = useState('');
   const [startTime, setStartTime] = useState('');
   const [duration, setDuration] = useState(2);
-  const [isValid, setIsValid] = useState(false);
 
   // Set default start time to next hour
   useState(() => {
@@ -45,114 +42,103 @@ export function BookingForm({ device, onClose }: BookingFormProps) {
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-end sm:items-center sm:justify-center">
+    <>
       {/* Backdrop */}
-      <div
-        className="absolute inset-0 bg-black/60 backdrop-blur-sm"
-        onClick={onClose}
-      />
+      <div className="fixed inset-0 z-50 bg-black/50" onClick={onClose} />
 
-      {/* Sheet */}
-      <div className="relative w-full animate-slide-up rounded-t-3xl border border-gaming-500/20 bg-gaming-800 p-6 sm:max-w-md sm:rounded-3xl">
-        {/* Header */}
-        <div className="mb-6 flex items-center justify-between">
-          <div>
-            <h2 className="text-lg font-bold text-gaming-50">Book Device</h2>
-            <p className="mt-0.5 text-sm text-gaming-400">{device.name}</p>
-          </div>
-          <button
-            onClick={onClose}
-            className="rounded-xl p-2 text-gaming-400 hover:bg-gaming-700/50 hover:text-gaming-50"
-          >
-            <X className="h-5 w-5" />
-          </button>
-        </div>
-
-        {/* Price Info */}
-        <div className="mb-6 rounded-xl bg-gaming-700/50 p-3 text-center">
-          <span className="text-2xl font-bold text-neon-cyan">
-            Rp {device.hourly_price.toLocaleString('id-ID')}
-          </span>
-          <span className="ml-1 text-sm text-gaming-400">/jam</span>
-        </div>
-
-        <div className="space-y-4">
-          {/* Customer Name */}
-          <div>
-            <label className="mb-1.5 block text-xs font-medium text-gaming-300">
-              Your Name
-            </label>
-            <div className="relative">
-              <User className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-gaming-400" />
-              <input
-                type="text"
-                value={customerName}
-                onChange={(e) => setCustomerName(e.target.value)}
-                placeholder="Masukkan nama kamu"
-                className="input-field pl-10"
-              />
+      {/* Modal */}
+      <div className="fixed inset-x-0 bottom-0 z-50 animate-slide-up lg:inset-auto lg:top-1/2 lg:left-1/2 lg:-translate-x-1/2 lg:-translate-y-1/2 lg:w-full lg:max-w-md">
+        <div className="rounded-t-2xl lg:rounded-2xl border border-gaming-700 bg-gaming-950 p-5 lg:p-6 shadow-elevated">
+          {/* Header */}
+          <div className="flex items-center justify-between mb-5">
+            <div>
+              <h2 className="text-base font-semibold text-gaming-100">
+                Booking {device.name}
+              </h2>
+              <p className="text-xs text-gaming-500 mt-0.5">
+                Rp{device.hourly_price.toLocaleString('id-ID')}/jam
+              </p>
             </div>
+            <button
+              onClick={onClose}
+              className="p-1.5 rounded-lg text-gaming-500 hover:text-gaming-300 hover:bg-gaming-800 transition-colors"
+            >
+              <X className="h-5 w-5" />
+            </button>
           </div>
 
-          {/* Start Time */}
-          <div>
-            <label className="mb-1.5 block text-xs font-medium text-gaming-300">
-              Start Time
-            </label>
-            <div className="relative">
-              <Clock className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-gaming-400" />
-              <input
-                type="time"
-                value={startTime}
-                onChange={(e) => setStartTime(e.target.value)}
-                className="input-field pl-10"
-              />
+          <div className="space-y-4">
+            {/* Name */}
+            <div>
+              <label className="block text-xs font-medium text-gaming-400 mb-1.5">Nama Kamu</label>
+              <div className="relative">
+                <User className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gaming-500" />
+                <input
+                  type="text"
+                  value={customerName}
+                  onChange={(e) => setCustomerName(e.target.value)}
+                  placeholder="Masukkan nama"
+                  className="input pl-10"
+                />
+              </div>
             </div>
-          </div>
 
-          {/* Duration */}
-          <div>
-            <label className="mb-1.5 block text-xs font-medium text-gaming-300">
-              Duration
-            </label>
-            <div className="grid grid-cols-5 gap-2">
-              {DURATIONS.map((h) => (
-                <button
-                  key={h}
-                  onClick={() => setDuration(h)}
-                  className={cn(
-                    'rounded-xl py-2 text-xs font-medium transition-all duration-200',
-                    duration === h
-                      ? 'bg-neon-cyan text-gaming-900'
-                      : 'bg-gaming-700/50 text-gaming-300 hover:bg-gaming-600/50'
-                  )}
-                >
-                  {h}h
-                </button>
-              ))}
+            {/* Time */}
+            <div>
+              <label className="block text-xs font-medium text-gaming-400 mb-1.5">Jam Mulai</label>
+              <div className="relative">
+                <Clock className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gaming-500" />
+                <input
+                  type="time"
+                  value={startTime}
+                  onChange={(e) => setStartTime(e.target.value)}
+                  className="input pl-10"
+                />
+              </div>
             </div>
+
+            {/* Duration */}
+            <div>
+              <label className="block text-xs font-medium text-gaming-400 mb-1.5">Durasi</label>
+              <div className="grid grid-cols-5 gap-1.5">
+                {DURATIONS.map((h) => (
+                  <button
+                    key={h}
+                    onClick={() => setDuration(h)}
+                    className={cn(
+                      'rounded-lg py-2 text-xs font-medium transition-colors',
+                      duration === h
+                        ? 'bg-emerald-500 text-white'
+                        : 'bg-gaming-800 text-gaming-400 hover:bg-gaming-700'
+                    )}
+                  >
+                    {h}j
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            {/* Submit */}
+            <button
+              onClick={handleSubmit}
+              disabled={!customerName.trim() || !startTime}
+              className={cn(
+                'btn w-full mt-2',
+                customerName.trim() && startTime
+                  ? 'btn-primary'
+                  : 'opacity-50 cursor-not-allowed bg-gaming-800 text-gaming-500'
+              )}
+            >
+              <Send className="h-4 w-4" />
+              Kirim via WhatsApp
+            </button>
+
+            <p className="text-center text-[11px] text-gaming-600">
+              Booking akan dikirim via WhatsApp untuk persetujuan staff
+            </p>
           </div>
-
-          {/* Submit */}
-          <button
-            onClick={handleSubmit}
-            disabled={!customerName.trim() || !startTime}
-            className={cn(
-              'btn w-full gap-2',
-              customerName.trim() && startTime
-                ? 'btn-primary'
-                : 'cursor-not-allowed bg-gaming-700/50 text-gaming-500'
-            )}
-          >
-            <Send className="h-4 w-4" />
-            Send via WhatsApp
-          </button>
-
-          <p className="text-center text-xs text-gaming-500">
-            Booking request will be sent via WhatsApp for staff approval
-          </p>
         </div>
       </div>
-    </div>
+    </>
   );
 }

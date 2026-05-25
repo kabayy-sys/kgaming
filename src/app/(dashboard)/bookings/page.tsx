@@ -6,16 +6,9 @@ import { useAuthStore } from '@/stores/auth-store';
 import { useBookingStore } from '@/stores/booking-store';
 import { useDeviceStore } from '@/stores/device-store';
 import { BottomNav } from '@/components/layout/bottom-nav';
-import { cn, bookingStatusColors, formatDateTime, formatDuration } from '@/lib/utils';
+import { cn, formatDateTime, formatDuration } from '@/lib/utils';
 import { supabase } from '@/lib/supabase';
-import {
-  CheckCircle2,
-  XCircle,
-  Clock,
-  User,
-  Monitor,
-  AlertCircle,
-} from 'lucide-react';
+import { CheckCircle2, XCircle, Clock, User, Monitor, AlertCircle } from 'lucide-react';
 
 export const dynamic = 'force-dynamic';
 
@@ -58,7 +51,7 @@ export default function BookingsPage() {
         details: { booking_id: bookingId },
       });
     } catch (err) {
-      console.error('Failed to approve:', err);
+      console.error(err);
     } finally {
       setActionLoading(null);
     }
@@ -77,7 +70,7 @@ export default function BookingsPage() {
         details: { booking_id: bookingId },
       });
     } catch (err) {
-      console.error('Failed to reject:', err);
+      console.error(err);
     } finally {
       setActionLoading(null);
     }
@@ -89,128 +82,122 @@ export default function BookingsPage() {
 
   if (authLoading) {
     return (
-      <div className="flex min-h-screen items-center justify-center bg-gaming-900">
-        <div className="h-8 w-8 animate-spin rounded-full border-2 border-neon-cyan border-t-transparent" />
+      <div className="flex min-h-screen items-center justify-center bg-gaming-950">
+        <div className="h-5 w-5 animate-spin rounded-full border-2 border-emerald-400 border-t-transparent" />
       </div>
     );
   }
 
   return (
-    <main className="min-h-screen bg-gaming-900 pb-24">
-      <header className="sticky top-0 z-40 border-b border-gaming-500/20 bg-gaming-900/95 backdrop-blur-xl">
-        <div className="mx-auto max-w-lg px-4 py-4">
-          <h1 className="text-lg font-bold text-gaming-50">Bookings</h1>
+    <main className="min-h-screen bg-gaming-950 pb-20 lg:pb-24">
+      <header className="page-header">
+        <div className="app-container py-3 lg:py-4">
+          <h1 className="text-base lg:text-lg font-semibold text-gaming-100">Bookings</h1>
         </div>
       </header>
 
-      <div className="mx-auto max-w-lg px-4 py-4">
-        {/* Filter Tabs */}
-        <div className="mb-4 flex gap-2">
+      <div className="app-container pt-4">
+        {/* Filters */}
+        <div className="flex gap-2 mb-4">
           {(['pending', 'approved', 'completed', 'all'] as const).map((f) => (
             <button
               key={f}
               onClick={() => setFilter(f)}
               className={cn(
-                'rounded-full px-4 py-2 text-xs font-medium transition-all',
+                'rounded-lg px-3.5 py-1.5 text-xs font-medium transition-colors',
                 filter === f
-                  ? 'bg-neon-cyan text-gaming-900'
-                  : 'bg-gaming-700/50 text-gaming-400 hover:text-gaming-200'
+                  ? 'bg-gaming-700 text-gaming-100 border border-gaming-600'
+                  : 'text-gaming-500 hover:text-gaming-300'
               )}
             >
-              {f === 'all' ? 'All' : f.charAt(0).toUpperCase() + f.slice(1)}
+              {f === 'all' ? 'Semua' : f.charAt(0).toUpperCase() + f.slice(1)}
             </button>
           ))}
         </div>
 
-        {/* Bookings List */}
+        {/* List */}
         {isLoading ? (
-          <div className="space-y-3">
+          <div className="space-y-2.5">
             {[1, 2, 3].map((i) => (
-              <div key={i} className="skeleton h-32 w-full rounded-2xl" />
+              <div key={i} className="h-28 rounded-2xl skeleton" />
             ))}
           </div>
         ) : filteredBookings.length === 0 ? (
-          <div className="flex flex-col items-center justify-center py-20 text-center">
-            <AlertCircle className="mb-4 h-12 w-12 text-gaming-500" />
-            <h3 className="text-lg font-bold text-gaming-300">No Bookings</h3>
-            <p className="mt-1 text-sm text-gaming-500">
-              {filter === 'pending' ? 'No pending bookings' : 'No bookings found'}
+          <div className="flex flex-col items-center justify-center pt-16 text-center">
+            <AlertCircle className="h-10 w-10 text-gaming-600 mb-3" />
+            <p className="text-sm text-gaming-500">
+              {filter === 'pending' ? 'Tidak ada booking pending' : 'Tidak ada booking'}
             </p>
           </div>
         ) : (
-          <div className="space-y-3">
+          <div className="space-y-2.5">
             {filteredBookings.map((booking) => {
-              const colors = bookingStatusColors[booking.status];
+              const statusStyle = {
+                pending: 'status-pending',
+                approved: 'status-ready',
+                rejected: 'status-maintenance',
+                expired: 'bg-gaming-800/50 text-gaming-500 border-gaming-700/50',
+                completed: 'bg-blue-500/10 text-blue-400 border-blue-500/20',
+              }[booking.status];
+
               return (
-                <div
-                  key={booking.id}
-                  className="glass-card animate-fade-in rounded-2xl p-4"
-                >
-                  {/* Header */}
-                  <div className="mb-3 flex items-center justify-between">
-                    <div className="flex items-center gap-2">
-                      <Monitor className="h-4 w-4 text-gaming-400" />
-                      <span className="text-sm font-medium text-gaming-50">
+                <div key={booking.id} className="card p-4 lg:p-5 animate-fade-in">
+                  <div className="flex items-center justify-between mb-3">
+                    <div className="flex items-center gap-2 min-w-0">
+                      <Monitor className="h-4 w-4 text-gaming-500 flex-shrink-0" />
+                      <span className="text-sm font-medium text-gaming-200 truncate">
                         {getDeviceName(booking.device_id)}
                       </span>
                     </div>
-                    <span className={cn('badge', colors.bg, colors.text)}>
+                    <span className={cn('badge border', statusStyle)}>
                       {booking.status}
                     </span>
                   </div>
 
-                  {/* Customer Info */}
-                  <div className="mb-3 space-y-1.5">
-                    <div className="flex items-center gap-2 text-xs text-gaming-300">
-                      <User className="h-3.5 w-3.5" />
+                  <div className="space-y-1.5 mb-3">
+                    <div className="flex items-center gap-2 text-xs text-gaming-400">
+                      <User className="h-3.5 w-3.5 flex-shrink-0" />
                       <span>{booking.customer_name}</span>
                     </div>
-                    <div className="flex items-center gap-2 text-xs text-gaming-300">
-                      <Clock className="h-3.5 w-3.5" />
-                      <span>
-                        {formatDateTime(booking.start_time)} • {formatDuration(booking.duration_hours)}
-                      </span>
+                    <div className="flex items-center gap-2 text-xs text-gaming-500">
+                      <Clock className="h-3.5 w-3.5 flex-shrink-0" />
+                      <span>{formatDateTime(booking.start_time)} • {formatDuration(booking.duration_hours)}</span>
                     </div>
                   </div>
 
-                  {/* Action Buttons */}
                   {booking.status === 'pending' && (
                     <div className="flex gap-2">
                       <button
                         onClick={() => handleApprove(booking.id)}
                         disabled={actionLoading === booking.id}
-                        className="btn-success flex-1 text-xs"
+                        className="btn-success btn-sm flex-1"
                       >
                         {actionLoading === booking.id ? (
-                          <span className="h-4 w-4 animate-spin rounded-full border-2 border-emerald-400 border-t-transparent" />
+                          <span className="h-3.5 w-3.5 rounded-full border-2 border-emerald-400 border-t-transparent animate-spin" />
                         ) : (
-                          <CheckCircle2 className="h-4 w-4" />
+                          <CheckCircle2 className="h-3.5 w-3.5" />
                         )}
-                        Approve
+                        Setujui
                       </button>
                       <button
                         onClick={() => handleReject(booking.id)}
                         disabled={actionLoading === booking.id}
-                        className="btn-danger flex-1 text-xs"
+                        className="btn-danger btn-sm flex-1"
                       >
                         {actionLoading === booking.id ? (
-                          <span className="h-4 w-4 animate-spin rounded-full border-2 border-rose-400 border-t-transparent" />
+                          <span className="h-3.5 w-3.5 rounded-full border-2 border-red-400 border-t-transparent animate-spin" />
                         ) : (
-                          <XCircle className="h-4 w-4" />
+                          <XCircle className="h-3.5 w-3.5" />
                         )}
-                        Reject
+                        Tolak
                       </button>
                     </div>
                   )}
 
-                  {/* Submitted time */}
                   <p className="mt-2 text-[10px] text-gaming-600">
-                    Submitted {new Date(booking.created_at).toLocaleDateString('id-ID', {
-                      weekday: 'long',
-                      day: 'numeric',
-                      month: 'short',
-                      hour: '2-digit',
-                      minute: '2-digit',
+                    {new Date(booking.created_at).toLocaleDateString('id-ID', {
+                      weekday: 'long', day: 'numeric', month: 'short',
+                      hour: '2-digit', minute: '2-digit',
                     })}
                   </p>
                 </div>
