@@ -1,0 +1,149 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  * {
+    @apply border-gaming-500/30;
+  }
+
+  html {
+    @apply bg-gaming-900 text-gaming-50 antialiased;
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  body {
+    @apply min-h-screen bg-gaming-900 font-body;
+    overscroll-behavior: none;
+  }
+
+  /* Mobile tap feedback */
+  * {
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  /* Scrollbar styling */
+  ::-webkit-scrollbar {
+    @apply w-1.5;
+  }
+
+  ::-webkit-scrollbar-track {
+    @apply bg-gaming-800;
+  }
+
+  ::-webkit-scrollbar-thumb {
+    @apply rounded-full bg-gaming-500;
+  }
+
+  ::-webkit-scrollbar-thumb:hover {
+    @apply bg-gaming-400;
+  }
+}
+
+@layer components {
+  /* Premium Glass Card */
+  .glass-card {
+    @apply border border-gaming-500/20 bg-gaming-800/60 backdrop-blur-xl;
+  }
+
+  /* Glowing Effect */
+  .glow-cyan {
+    box-shadow: 0 0 20px theme('colors.neon.cyan'), 0 0 40px theme('colors.neon.cyan' / 0.3);
+  }
+
+  .glow-purple {
+    box-shadow: 0 0 20px theme('colors.neon.purple'), 0 0 40px theme('colors.neon.purple' / 0.3);
+  }
+
+  .glow-pink {
+    box-shadow: 0 0 20px theme('colors.neon.pink'), 0 0 40px theme('colors.neon.pink' / 0.3);
+  }
+
+  /* Button Base */
+  .btn {
+    @apply inline-flex items-center justify-center gap-2 rounded-xl px-4 py-3 text-sm font-semibold transition-all duration-200 active:scale-95;
+  }
+
+  .btn-primary {
+    @apply btn bg-neon-cyan text-gaming-900 hover:bg-neon-cyan/90;
+  }
+
+  .btn-secondary {
+    @apply btn border border-gaming-500/50 bg-gaming-700/50 text-gaming-100 hover:bg-gaming-600/50;
+  }
+
+  .btn-ghost {
+    @apply btn text-gaming-200 hover:bg-gaming-700/50 hover:text-gaming-50;
+  }
+
+  .btn-danger {
+    @apply btn bg-status-maintenance/20 text-status-maintenance hover:bg-status-maintenance/30;
+  }
+
+  .btn-success {
+    @apply btn bg-status-ready/20 text-status-ready hover:bg-status-ready/30;
+  }
+
+  /* Input */
+  .input-field {
+    @apply w-full rounded-xl border border-gaming-500/30 bg-gaming-800/80 px-4 py-3 text-sm text-gaming-50 placeholder:text-gaming-400 focus:border-neon-cyan/50 focus:outline-none focus:ring-1 focus:ring-neon-cyan/30;
+  }
+
+  /* Status Dot */
+  .status-dot {
+    @apply inline-block h-2.5 w-2.5 rounded-full;
+  }
+
+  /* Badge */
+  .badge {
+    @apply inline-flex items-center gap-1.5 rounded-lg px-2.5 py-1 text-xs font-medium;
+  }
+
+  /* Section Header */
+  .section-header {
+    @apply mb-4 text-lg font-bold text-gaming-50;
+  }
+
+  /* Interactive Card */
+  .interactive-card {
+    @apply cursor-pointer transition-all duration-200 active:scale-[0.98];
+  }
+
+  /* Bottom Navigation */
+  .bottom-nav {
+    @apply fixed bottom-0 left-0 right-0 z-50 border-t border-gaming-500/20 bg-gaming-800/95 backdrop-blur-xl;
+  }
+
+  /* Skeleton Loading */
+  .skeleton {
+    @apply animate-pulse rounded-lg bg-gaming-700/50;
+  }
+
+  /* Neon Text */
+  .neon-text-cyan {
+    @apply text-neon-cyan;
+    text-shadow: 0 0 10px theme('colors.neon.cyan' / 0.5);
+  }
+
+  .neon-text-purple {
+    @apply text-neon-purple;
+    text-shadow: 0 0 10px theme('colors.neon.purple' / 0.5);
+  }
+}
+
+@layer utilities {
+  /* Hide scrollbar but keep functionality */
+  .no-scrollbar {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+  }
+
+  .no-scrollbar::-webkit-scrollbar {
+    display: none;
+  }
+
+  /* Safe area padding for mobile */
+  .safe-bottom {
+    padding-bottom: env(safe-area-inset-bottom, 1rem);
+  }
+}
