@@ -26,10 +26,9 @@ export const bookingStatusColors: Record<BookingStatus, { bg: string; text: stri
 
 // ---- Category Display Config ----
 export const categoryConfig: Record<DeviceCategory, { icon: string; label: string }> = {
-  PS5: { icon: '🎮', label: 'PlayStation 5' },
-  VIP: { icon: '⭐', label: 'VIP Room' },
   Regular: { icon: '🖥️', label: 'Regular' },
-  PC: { icon: '💻', label: 'PC Gaming' },
+  'VIP 1': { icon: '⭐', label: 'VIP Room 1' },
+  'VIP 2': { icon: '⭐', label: 'VIP Room 2' },
 };
 
 // ---- Status Display Config ----

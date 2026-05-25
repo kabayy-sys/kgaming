@@ -8,8 +8,7 @@
 -- 4. Klik "New Query"
 -- 5. Paste semua isi file ini
 -- 6. Klik "Run" (atau Ctrl+Enter)
--- 7. TUNGGU sampai muncul "Success. No rows returned"
--- 8. Selesai! Jangan centang RLS / Row Level Security
+-- 7. Jangan centang RLS / Row Level Security
 -- =============================================
 
 -- =============================================
@@ -32,7 +31,7 @@ CREATE TABLE IF NOT EXISTS staff_profiles (
 CREATE TABLE IF NOT EXISTS devices (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   name TEXT NOT NULL,
-  category TEXT NOT NULL CHECK (category IN ('PS5', 'VIP', 'Regular', 'PC')),
+  category TEXT NOT NULL CHECK (category IN ('Regular', 'VIP 1', 'VIP 2')),
   status TEXT NOT NULL DEFAULT 'Ready' CHECK (status IN ('Ready', 'In Use', 'Booked', 'Pending', 'Maintenance')),
   hourly_price INTEGER NOT NULL DEFAULT 0,
   facilities TEXT[] DEFAULT '{}',
@@ -140,19 +139,28 @@ ON CONFLICT (username) DO NOTHING;
 -- =============================================
 -- 10. DATA AWAL: Sample Devices
 -- =============================================
+-- HAPUS DULU DATA LAMA kalau ada (jalanin ini kalo sebelumnya udah ada data lama)
+-- DELETE FROM devices;
+
 INSERT INTO devices (name, category, status, hourly_price, facilities) VALUES
-  ('PS5 VIP 1', 'PS5', 'Ready', 25000, ARRAY['4K TV', 'Wireless Controller', 'Headset']),
-  ('PS5 VIP 2', 'PS5', 'Ready', 25000, ARRAY['4K TV', 'Wireless Controller']),
-  ('PS5 Regular 1', 'PS5', 'In Use', 15000, ARRAY['HD TV', 'Controller']),
-  ('PS5 Regular 2', 'PS5', 'Ready', 15000, ARRAY['HD TV', 'Controller']),
-  ('VIP Room 1', 'VIP', 'Ready', 35000, ARRAY['AC', 'Sofa', '4K TV', 'Mini Fridge']),
-  ('VIP Room 2', 'VIP', 'Maintenance', 35000, ARRAY['AC', 'Sofa', '4K TV']),
-  ('Regular 1', 'Regular', 'Ready', 10000, ARRAY['Monitor 24"', 'Headset']),
-  ('Regular 2', 'Regular', 'In Use', 10000, ARRAY['Monitor 24"', 'Headset']),
-  ('Regular 3', 'Regular', 'Ready', 10000, ARRAY['Monitor 27"', 'Headset']),
-  ('PC Gaming 1', 'PC', 'Ready', 20000, ARRAY['RTX 4060', '144Hz Monitor', 'RGB Keyboard']),
-  ('PC Gaming 2', 'PC', 'In Use', 20000, ARRAY['RTX 4060', '144Hz Monitor', 'RGB Keyboard']),
-  ('PC Gaming 3', 'PC', 'Booked', 20000, ARRAY['RTX 4070', '165Hz Monitor', 'RGB Setup'])
+  -- REGULER: 4 device PS4 @ Rp 10.000/jam
+  ('PS4 Reguler 1', 'Regular', 'Ready', 10000, ARRAY['PS4', 'Monitor 24"', 'Headset']),
+  ('PS4 Reguler 2', 'Regular', 'Ready', 10000, ARRAY['PS4', 'Monitor 24"', 'Headset']),
+  ('PS4 Reguler 3', 'Regular', 'In Use', 10000, ARRAY['PS4', 'Monitor 24"', 'Headset']),
+  ('PS4 Reguler 4', 'Regular', 'Ready', 10000, ARRAY['PS4', 'Monitor 24"', 'Headset']),
+
+  -- VIP 1: PS4 Pro, Nintendo, Netflix @ Rp 30.000/jam
+  ('VIP 1.A - PS4 Pro', 'VIP 1', 'Ready', 30000, ARRAY['PS4 Pro', '4K TV 55"', 'Headset Wireless']),
+  ('VIP 1.A - Nintendo', 'VIP 1', 'Ready', 30000, ARRAY['Nintendo Switch', '4K TV 55"', 'Joycon']),
+  ('VIP 1.A - Netflix', 'VIP 1', 'In Use', 30000, ARRAY['Netflix 4K', 'Smart TV 55"', 'AC', 'Sofa']),
+  ('VIP 1.B - PS4 Pro', 'VIP 1', 'Ready', 30000, ARRAY['PS4 Pro', '4K TV 55"', 'Headset Wireless']),
+  ('VIP 1.B - Nintendo', 'VIP 1', 'Maintenance', 30000, ARRAY['Nintendo Switch', '4K TV 55"', 'Joycon']),
+  ('VIP 1.B - Netflix', 'VIP 1', 'Ready', 30000, ARRAY['Netflix 4K', 'Smart TV 55"', 'AC', 'Sofa']),
+
+  -- VIP 2: PS5, Nintendo, Netflix @ Rp 35.000/jam
+  ('VIP 2 - PS5', 'VIP 2', 'Ready', 35000, ARRAY['PS5', '4K TV 65"', 'Headset Wireless', 'RGB Light']),
+  ('VIP 2 - Nintendo', 'VIP 2', 'Ready', 35000, ARRAY['Nintendo Switch OLED', '4K TV 65"', 'AC']),
+  ('VIP 2 - Netflix', 'VIP 2', 'Booked', 35000, ARRAY['Netflix 4K', 'Smart TV 65"', 'AC', 'Sofa Bed', 'Mini Fridge'])
 ON CONFLICT DO NOTHING;
 
 -- =============================================
