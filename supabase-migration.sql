@@ -1,34 +1,28 @@
 -- =============================================
 -- K Gaming XCafe - Migration: Fix Categories
 -- =============================================
--- MASALAH: Database constraint masih pake kategori LAMA
---   ('Reguler', 'VIP 1.A', 'VIP 1.B', 'VIP 2')
--- Tapi kode udah pake kategori BARU
---   ('Reguler', 'VIP 1', 'VIP 2')
--- SEHINGGA: waktu Sync Database, insert device kategori
---   'VIP 1' gagal karena database ga nerima.
--- =============================================
 -- CARA PAKAI:
--- 1. Buka https://supabase.com
+-- 1. Buka https://supabase.com → login
 -- 2. Masuk ke project → SQL Editor
--- 3. Paste query di bawah ini
--- 4. Klik RUN
--- 5. Selesai! Login ke aplikasi → Sync Database → beres
+-- 3. Klik + New Query (jangan timpa yang lama)
+-- 4. Paste SEMUA query di bawah ini
+-- 5. Klik RUN
+-- 6. Balik ke aplikasi, refresh, filter sudah jalan
 -- =============================================
 
--- 1. Hapus constraint category yang lama
-ALTER TABLE devices DROP CONSTRAINT IF EXISTS devices_category_check;
-
--- 2. Buat constraint category yang baru
-ALTER TABLE devices ADD CONSTRAINT devices_category_check
-  CHECK (category IN ('Reguler', 'VIP 1', 'VIP 2'));
-
--- 3. Hapus data lama
+-- 1. Hapus dulu SEMUA data yang ada
 DELETE FROM activity_logs;
 DELETE FROM bookings;
 DELETE FROM devices;
 
--- 4. Insert ulang 7 device dengan kategori & harga baru
+-- 2. Hapus constraint category yang lama
+ALTER TABLE devices DROP CONSTRAINT IF EXISTS devices_category_check;
+
+-- 3. Buat constraint category yang baru
+ALTER TABLE devices ADD CONSTRAINT devices_category_check
+  CHECK (category IN ('Reguler', 'VIP 1', 'VIP 2'));
+
+-- 4. Insert ulang 7 device yang benar
 INSERT INTO devices (name, category, status, hourly_price, facilities) VALUES
   -- Reguler: 4 PS4 biasa @ Rp10.000
   ('PS4 Reguler 1', 'Reguler', 'Ready', 10000, ARRAY['PS4 Console', 'Controller', 'HD TV']),
