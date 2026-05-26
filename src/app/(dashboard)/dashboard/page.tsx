@@ -40,8 +40,9 @@ export default function DashboardPage() {
     total_devices: 0,
     devices_in_use: 0,
     devices_ready: 0,
+    devices_pending: 0,
+    devices_booked: 0,
     devices_maintenance: 0,
-    pending_bookings: 0,
   });
 
   useEffect(() => {
@@ -67,11 +68,12 @@ export default function DashboardPage() {
         total_devices: devices.filter((d) => !d.is_archived).length,
         devices_in_use: devices.filter((d) => d.status === 'In Use').length,
         devices_ready: devices.filter((d) => d.status === 'Ready').length,
+        devices_pending: devices.filter((d) => d.status === 'Pending').length,
+        devices_booked: devices.filter((d) => d.status === 'Booked').length,
         devices_maintenance: devices.filter((d) => d.status === 'Maintenance').length,
-        pending_bookings: pendingCount,
       });
     }
-  }, [devices, pendingCount]);
+  }, [devices]);
 
   const handleStatusChange = async (device: Device, newStatus: DeviceStatus) => {
     if (!user) return;
@@ -148,7 +150,7 @@ export default function DashboardPage() {
         <div className="grid grid-cols-2 lg:grid-cols-4 gap-2.5">
           <StatCard label="Ready" value={stats.devices_ready} color="text-emerald-400" />
           <StatCard label="In Use" value={stats.devices_in_use} color="text-amber-400" />
-          <StatCard label="Pending" value={stats.pending_bookings} color="text-yellow-400" />
+          <StatCard label="Pending" value={stats.devices_pending} color="text-yellow-400" />
           <StatCard label="Maint." value={stats.devices_maintenance} color="text-red-400" />
         </div>
 
