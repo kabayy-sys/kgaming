@@ -22,6 +22,7 @@ export default function HomePage() {
   }, []);
 
   const availableCount = devices.filter((d) => d.status === 'Ready' && !d.is_archived).length;
+  const inUseCount = devices.filter((d) => d.status === 'In Use' && !d.is_archived).length;
   const visibleDevices = filteredDevices();
 
   return (
@@ -41,9 +42,10 @@ export default function HomePage() {
 
           <div className="flex items-center justify-between mt-2">
             <span className="text-xs text-gaming-500">{getTodayDate()}</span>
-            <span className="text-xs text-gaming-400">
-              <span className="text-emerald-400 font-semibold">{availableCount}</span> tersedia
-            </span>
+            <div className="flex items-center gap-3 text-xs text-gaming-400">
+              <span><span className="text-emerald-400 font-semibold">{availableCount}</span> Ready</span>
+              <span><span className="text-amber-400 font-semibold">{inUseCount}</span> In Use</span>
+            </div>
           </div>
 
           <div className="mt-3">
@@ -72,6 +74,7 @@ export default function HomePage() {
                 key={device.id}
                 device={device}
                 onBook={(d) => setBookingDevice(d)}
+                isPublic
               />
             ))}
           </div>

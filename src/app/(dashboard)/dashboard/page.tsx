@@ -9,9 +9,9 @@ import { BottomNav } from '@/components/layout/bottom-nav';
 import { DeviceCard } from '@/components/devices/device-card';
 import { FilterBar } from '@/components/devices/filter-bar';
 import { cn, getTodayDate } from '@/lib/utils';
-import type { Device, DashboardStats, DeviceStatus } from '@/types';
+import type { Device, DeviceStatus } from '@/types';
 import { supabase } from '@/lib/supabase';
-import { Monitor, CalendarCheck, Clock, LogOut } from 'lucide-react';
+import { LogOut, CalendarCheck, Clock } from 'lucide-react';
 
 export const dynamic = 'force-dynamic';
 
@@ -36,7 +36,13 @@ export default function DashboardPage() {
   const { user, isAuthenticated, isLoading: authLoading, logout } = useAuthStore();
   const { devices, filteredDevices, fetchDevices, subscribeToDevices, updateDeviceStatus } = useDeviceStore();
   const { fetchBookings, subscribeToBookings, pendingCount } = useBookingStore();
-  const [stats, setStats] = useState<DashboardStats | null>(null);
+  const [stats, setStats] = useState({
+    total_devices: 0,
+    devices_in_use: 0,
+    devices_ready: 0,
+    devices_maintenance: 0,
+    pending_bookings: 0,
+  });
 
   useEffect(() => {
     if (!authLoading && !isAuthenticated) {
@@ -63,32 +69,24 @@ export default function DashboardPage() {
         devices_ready: devices.filter((d) => d.status === 'Ready').length,
         devices_maintenance: devices.filter((d) => d.status === 'Maintenance').length,
         pending_bookings: pendingCount,
-        active_bookings: devices.filter((d) => d.status === 'Booked' || d.status === 'Pending').length,
-        total_staff: 0,
       });
     }
   }, [devices, pendingCount]);
 
-  const handleStatusChange = async (device: Device) => {
-    const nextStatus: Record<DeviceStatus, DeviceStatus> = {
-      Ready: 'In Use',
-      'In Use': 'Ready',
-      Booked: 'In Use',
-      Pending: 'Ready',
-      Maintenance: 'Ready',
-    };
+  const handleStatusChange = async (device: Device, newStatus: DeviceStatus) => {
+    if (!user) return;
 
-    const newStatus = nextStatus[device.status];
+    const oldStatus = device.status;
     await updateDeviceStatus(device.id, newStatus);
 
     await supabase.from('activity_logs').insert({
       action: 'device_status_change',
-      actor_id: user?.id,
-      actor_name: user?.display_name || 'Unknown',
+      actor_id: user.id,
+      actor_name: user.display_name || 'Unknown',
       target_type: 'device',
       target_id: device.id,
       details: {
-        from_status: device.status,
+        from_status: oldStatus,
         to_status: newStatus,
         device_name: device.name,
       },
@@ -147,14 +145,12 @@ export default function DashboardPage() {
         )}
 
         {/* Stats Grid */}
-        {stats && (
-          <div className="grid grid-cols-2 lg:grid-cols-4 gap-2.5">
-            <StatCard label="Ready" value={stats.devices_ready} color="text-emerald-400" />
-            <StatCard label="In Use" value={stats.devices_in_use} color="text-amber-400" />
-            <StatCard label="Pending" value={stats.pending_bookings} color="text-yellow-400" />
-            <StatCard label="Maint." value={stats.devices_maintenance} color="text-red-400" />
-          </div>
-        )}
+        <div className="grid grid-cols-2 lg:grid-cols-4 gap-2.5">
+          <StatCard label="Ready" value={stats.devices_ready} color="text-emerald-400" />
+          <StatCard label="In Use" value={stats.devices_in_use} color="text-amber-400" />
+          <StatCard label="Pending" value={stats.pending_bookings} color="text-yellow-400" />
+          <StatCard label="Maint." value={stats.devices_maintenance} color="text-red-400" />
+        </div>
 
         {/* Quick Links */}
         <div className="grid grid-cols-2 gap-2.5">
@@ -173,14 +169,24 @@ export default function DashboardPage() {
 
         {/* Device Management */}
         <div>
-          <h2 className="text-sm font-semibold text-gaming-200 mb-3">Status Device</h2>
+          <h2 className="text-sm font-semibold text-gaming-200 mb-3">
+            Status Device
+            <span className="text-xs font-normal text-gaming-500 ml-2">
+              Tap device untuk ubah status
+            </span>
+          </h2>
           <FilterBar />
           <div className="mt-3 space-y-2.5">
+            {filteredDevices().length === 0 && (
+              <div className="flex flex-col items-center justify-center pt-8 text-center">
+                <p className="text-sm text-gaming-500">Tidak ada device</p>
+              </div>
+            )}
             {filteredDevices().map((device) => (
               <DeviceCard
                 key={device.id}
                 device={device}
-                onStatusChange={(d) => handleStatusChange(d)}
+                onStatusChange={handleStatusChange}
                 compact
               />
             ))}
