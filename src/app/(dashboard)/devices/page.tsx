@@ -13,7 +13,7 @@ import { Plus, Pencil, Archive, Monitor, Search, RefreshCw, RotateCcw, AlertTria
 
 export const dynamic = 'force-dynamic';
 
-const CATEGORIES: (DeviceCategory | 'all')[] = ['all', 'Reguler', 'VIP 1.A', 'VIP 1.B', 'VIP 2'];
+const CATEGORIES: (DeviceCategory | 'all')[] = ['all', 'Reguler', 'VIP 1', 'VIP 2'];
 const STATUS_COLORS: Record<DeviceStatus, string> = {
   Ready: 'text-emerald-400',
   'In Use': 'text-amber-400',
@@ -50,19 +50,16 @@ export default function DevicesPage() {
   });
 
   const seedData = [
+    // Reguler: 4 PS4 biasa @ Rp10.000
     { name: 'PS4 Reguler 1', category: 'Reguler' as const, status: 'Ready' as const, hourly_price: 10000, facilities: ['PS4 Console', 'Controller', 'HD TV'] },
     { name: 'PS4 Reguler 2', category: 'Reguler' as const, status: 'In Use' as const, hourly_price: 10000, facilities: ['PS4 Console', 'Controller', 'HD TV'] },
     { name: 'PS4 Reguler 3', category: 'Reguler' as const, status: 'Ready' as const, hourly_price: 10000, facilities: ['PS4 Console', 'Controller', 'HD TV'] },
     { name: 'PS4 Reguler 4', category: 'Reguler' as const, status: 'Booked' as const, hourly_price: 10000, facilities: ['PS4 Console', 'Controller', 'HD TV'] },
-    { name: 'PS4 Pro VIP 1.A', category: 'VIP 1.A' as const, status: 'Ready' as const, hourly_price: 30000, facilities: ['PS4 Pro', '4K TV', 'Wireless Controller', 'Headset'] },
-    { name: 'Nintendo VIP 1.A', category: 'VIP 1.A' as const, status: 'Ready' as const, hourly_price: 30000, facilities: ['Nintendo Switch', '4K TV', 'Joy-Con'] },
-    { name: 'Netflix VIP 1.A', category: 'VIP 1.A' as const, status: 'Ready' as const, hourly_price: 30000, facilities: ['4K TV', 'Streaming Access', 'Mini Fridge'] },
-    { name: 'PS4 Pro VIP 1.B', category: 'VIP 1.B' as const, status: 'Ready' as const, hourly_price: 30000, facilities: ['PS4 Pro', '4K TV', 'Wireless Controller', 'Headset'] },
-    { name: 'Nintendo VIP 1.B', category: 'VIP 1.B' as const, status: 'In Use' as const, hourly_price: 30000, facilities: ['Nintendo Switch', '4K TV', 'Joy-Con'] },
-    { name: 'Netflix VIP 1.B', category: 'VIP 1.B' as const, status: 'Ready' as const, hourly_price: 30000, facilities: ['4K TV', 'Streaming Access', 'Mini Fridge'] },
-    { name: 'PS5 VIP 2', category: 'VIP 2' as const, status: 'Ready' as const, hourly_price: 35000, facilities: ['PS5', '4K TV', 'Wireless Controller', 'Headset'] },
-    { name: 'Nintendo VIP 2', category: 'VIP 2' as const, status: 'Ready' as const, hourly_price: 35000, facilities: ['Nintendo Switch', '4K TV', 'Joy-Con'] },
-    { name: 'Netflix VIP 2', category: 'VIP 2' as const, status: 'In Use' as const, hourly_price: 35000, facilities: ['4K TV', 'Streaming Access', 'Mini Fridge', 'Sofa'] },
+    // VIP 1: 2 unit (1.A & 1.B) @ Rp30.000
+    { name: 'VIP 1.A - PS4 Pro, Netflix, Nintendo', category: 'VIP 1' as const, status: 'Ready' as const, hourly_price: 30000, facilities: ['PS4 Pro', '4K TV', 'Wireless Controller', 'Netflix', 'Nintendo Switch', 'Headset'] },
+    { name: 'VIP 1.B - PS4 Pro, Netflix, Nintendo', category: 'VIP 1' as const, status: 'In Use' as const, hourly_price: 30000, facilities: ['PS4 Pro', '4K TV', 'Wireless Controller', 'Netflix', 'Nintendo Switch', 'Headset', 'Mini Fridge'] },
+    // VIP 2: 1 unit @ Rp35.000
+    { name: 'VIP 2 - PS5, Nintendo, Netflix', category: 'VIP 2' as const, status: 'Ready' as const, hourly_price: 35000, facilities: ['PS5', '4K TV', 'Wireless Controller', 'Nintendo Switch', 'Netflix', 'Sofa'] },
   ];
 
   const handleResetDatabase = async () => {
@@ -114,8 +111,7 @@ export default function DevicesPage() {
   const categoryCounts = {
     all: devices.filter(d => !d.is_archived).length,
     Reguler: devices.filter(d => d.category === 'Reguler' && !d.is_archived).length,
-    'VIP 1.A': devices.filter(d => d.category === 'VIP 1.A' && !d.is_archived).length,
-    'VIP 1.B': devices.filter(d => d.category === 'VIP 1.B' && !d.is_archived).length,
+    'VIP 1': devices.filter(d => d.category === 'VIP 1' && !d.is_archived).length,
     'VIP 2': devices.filter(d => d.category === 'VIP 2' && !d.is_archived).length,
   };
 

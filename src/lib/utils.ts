@@ -26,10 +26,9 @@ export const bookingStatusColors: Record<BookingStatus, { bg: string; text: stri
 
 // ---- Category Display Config ----
 export const categoryConfig: Record<DeviceCategory, { icon: string; label: string; defaultPrice: number; description: string }> = {
-  Reguler: { icon: '🖥️', label: 'Reguler', defaultPrice: 10000, description: 'PS4 - 4 unit tersedia' },
-  'VIP 1.A': { icon: '⭐', label: 'VIP 1.A', defaultPrice: 30000, description: 'PS4 Pro, Nintendo, Netflix' },
-  'VIP 1.B': { icon: '⭐', label: 'VIP 1.B', defaultPrice: 30000, description: 'PS4 Pro, Nintendo, Netflix' },
-  'VIP 2': { icon: '🎮', label: 'VIP 2', defaultPrice: 35000, description: 'PS5, Nintendo, Netflix' },
+  Reguler: { icon: '🖥️', label: 'Reguler', defaultPrice: 10000, description: 'PS4 Biasa - 4 unit' },
+  'VIP 1': { icon: '⭐', label: 'VIP 1', defaultPrice: 30000, description: 'PS4 Pro, Netflix, Nintendo - 2 unit' },
+  'VIP 2': { icon: '🎮', label: 'VIP 2', defaultPrice: 35000, description: 'PS5, Nintendo, Netflix - 1 unit' },
 };
 
 // ---- Status Display Config ----

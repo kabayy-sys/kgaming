@@ -7,8 +7,7 @@ import type { DeviceCategory } from '@/types';
 const filters: { value: DeviceCategory | 'all'; label: string; icon: string }[] = [
   { value: 'all', label: 'Semua', icon: '📋' },
   { value: 'Reguler', label: 'Reguler', icon: '🖥️' },
-  { value: 'VIP 1.A', label: 'VIP 1.A', icon: '⭐' },
-  { value: 'VIP 1.B', label: 'VIP 1.B', icon: '⭐' },
+  { value: 'VIP 1', label: 'VIP 1', icon: '⭐' },
   { value: 'VIP 2', label: 'VIP 2', icon: '🎮' },
 ];
 

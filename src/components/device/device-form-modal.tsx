@@ -14,7 +14,7 @@ interface DeviceFormModalProps {
   actorId?: string;
 }
 
-const CATEGORIES: DeviceCategory[] = ['Reguler', 'VIP 1.A', 'VIP 1.B', 'VIP 2'];
+const CATEGORIES: DeviceCategory[] = ['Reguler', 'VIP 1', 'VIP 2'];
 const STATUSES: DeviceStatus[] = ['Ready', 'In Use', 'Booked', 'Pending', 'Maintenance'];
 
 export function DeviceFormModal({ device, onClose, onSaved, actorName, actorId }: DeviceFormModalProps) {
@@ -127,7 +127,7 @@ export function DeviceFormModal({ device, onClose, onSaved, actorName, actorId }
             {/* Kategori dengan deskripsi */}
             <div>
               <label className="block text-xs font-medium text-gaming-400 mb-2">Kategori</label>
-              <div className="grid grid-cols-2 gap-2">
+              <div className="grid grid-cols-3 gap-2">
                 {CATEGORIES.map((cat) => {
                   const cfg = categoryConfig[cat];
                   return (
