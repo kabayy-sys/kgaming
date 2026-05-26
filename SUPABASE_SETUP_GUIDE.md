@@ -99,18 +99,19 @@ Buka `http://localhost:3000` di browser.
 
 | Device | Category | Status | Price |
 |--------|----------|--------|-------|
-| PS5 VIP 1 | PS5 | ✅ Ready | Rp 25.000 |
-| PS5 VIP 2 | PS5 | ✅ Ready | Rp 25.000 |
-| PS5 Regular 1 | PS5 | 🎮 In Use | Rp 15.000 |
-| PS5 Regular 2 | PS5 | ✅ Ready | Rp 15.000 |
-| VIP Room 1 | VIP | ✅ Ready | Rp 35.000 |
-| VIP Room 2 | VIP | 🔧 Maintenance | Rp 35.000 |
-| Regular 1 | Regular | ✅ Ready | Rp 10.000 |
-| Regular 2 | Regular | 🎮 In Use | Rp 10.000 |
-| Regular 3 | Regular | ✅ Ready | Rp 10.000 |
-| PC Gaming 1 | PC | ✅ Ready | Rp 20.000 |
-| PC Gaming 2 | PC | 🎮 In Use | Rp 20.000 |
-| PC Gaming 3 | PC | 📅 Booked | Rp 20.000 |
+| PS4 Reguler 1 | Reguler | ✅ Ready | Rp 10.000 |
+| PS4 Reguler 2 | Reguler | 🎮 In Use | Rp 10.000 |
+| PS4 Reguler 3 | Reguler | ✅ Ready | Rp 10.000 |
+| PS4 Reguler 4 | Reguler | 📅 Booked | Rp 10.000 |
+| PS4 Pro VIP 1.A | VIP 1.A | ✅ Ready | Rp 30.000 |
+| Nintendo VIP 1.A | VIP 1.A | ✅ Ready | Rp 30.000 |
+| Netflix VIP 1.A | VIP 1.A | ✅ Ready | Rp 30.000 |
+| PS4 Pro VIP 1.B | VIP 1.B | ✅ Ready | Rp 30.000 |
+| Nintendo VIP 1.B | VIP 1.B | 🎮 In Use | Rp 30.000 |
+| Netflix VIP 1.B | VIP 1.B | ✅ Ready | Rp 30.000 |
+| PS5 VIP 2 | VIP 2 | ✅ Ready | Rp 35.000 |
+| Nintendo VIP 2 | VIP 2 | ✅ Ready | Rp 35.000 |
+| Netflix VIP 2 | VIP 2 | 🎮 In Use | Rp 35.000 |
 
 ---
 

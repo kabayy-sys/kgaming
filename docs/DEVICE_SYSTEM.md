@@ -1,10 +1,10 @@
 # Device System
 
 ## Device Categories
-- PS5
-- VIP
-- Regular
-- PC
+- Reguler (PS4 @ Rp10.000/jam)
+- VIP 1.A (PS4 Pro, Nintendo, Netflix @ Rp30.000/jam)
+- VIP 1.B (PS4 Pro, Nintendo, Netflix @ Rp30.000/jam)
+- VIP 2 (PS5, Nintendo, Netflix @ Rp35.000/jam)
 
 ---
 

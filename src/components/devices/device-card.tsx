@@ -60,17 +60,17 @@ const statusConfig = {
 };
 
 const categoryIcons: Record<string, string> = {
-  PS5: '🎮',
-  VIP: '⭐',
-  Regular: '🖥️',
-  PC: '💻',
+  Reguler: '🖥️',
+  'VIP 1.A': '⭐',
+  'VIP 1.B': '⭐',
+  'VIP 2': '🎮',
 };
 
 const categoryLabels: Record<string, string> = {
-  PS5: 'PlayStation 5',
-  VIP: 'VIP Room',
-  Regular: 'Regular',
-  PC: 'PC Gaming',
+  Reguler: 'Reguler',
+  'VIP 1.A': 'VIP 1.A',
+  'VIP 1.B': 'VIP 1.B',
+  'VIP 2': 'VIP 2',
 };
 
 export function DeviceCard({ device, onBook, onStatusChange, compact }: DeviceCardProps) {

@@ -32,7 +32,7 @@ CREATE TABLE IF NOT EXISTS staff_profiles (
 CREATE TABLE IF NOT EXISTS devices (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   name TEXT NOT NULL,
-  category TEXT NOT NULL CHECK (category IN ('PS5', 'VIP', 'Regular', 'PC')),
+  category TEXT NOT NULL CHECK (category IN ('Reguler', 'VIP 1.A', 'VIP 1.B', 'VIP 2')),
   status TEXT NOT NULL DEFAULT 'Ready' CHECK (status IN ('Ready', 'In Use', 'Booked', 'Pending', 'Maintenance')),
   hourly_price INTEGER NOT NULL DEFAULT 0,
   facilities TEXT[] DEFAULT '{}',
@@ -139,20 +139,30 @@ ON CONFLICT (username) DO NOTHING;
 
 -- =============================================
 -- 10. DATA AWAL: Sample Devices
+-- Struktur Kategori:
+--   Reguler : 4 PS4  @ Rp10.000/jam
+--   VIP 1.A : PS4 Pro, Nintendo, Netflix  @ Rp30.000/jam
+--   VIP 1.B : PS4 Pro, Nintendo, Netflix  @ Rp30.000/jam
+--   VIP 2   : PS5, Nintendo, Netflix      @ Rp35.000/jam
 -- =============================================
 INSERT INTO devices (name, category, status, hourly_price, facilities) VALUES
-  ('PS5 VIP 1', 'PS5', 'Ready', 25000, ARRAY['4K TV', 'Wireless Controller', 'Headset']),
-  ('PS5 VIP 2', 'PS5', 'Ready', 25000, ARRAY['4K TV', 'Wireless Controller']),
-  ('PS5 Regular 1', 'PS5', 'In Use', 15000, ARRAY['HD TV', 'Controller']),
-  ('PS5 Regular 2', 'PS5', 'Ready', 15000, ARRAY['HD TV', 'Controller']),
-  ('VIP Room 1', 'VIP', 'Ready', 35000, ARRAY['AC', 'Sofa', '4K TV', 'Mini Fridge']),
-  ('VIP Room 2', 'VIP', 'Maintenance', 35000, ARRAY['AC', 'Sofa', '4K TV']),
-  ('Regular 1', 'Regular', 'Ready', 10000, ARRAY['Monitor 24"', 'Headset']),
-  ('Regular 2', 'Regular', 'In Use', 10000, ARRAY['Monitor 24"', 'Headset']),
-  ('Regular 3', 'Regular', 'Ready', 10000, ARRAY['Monitor 27"', 'Headset']),
-  ('PC Gaming 1', 'PC', 'Ready', 20000, ARRAY['RTX 4060', '144Hz Monitor', 'RGB Keyboard']),
-  ('PC Gaming 2', 'PC', 'In Use', 20000, ARRAY['RTX 4060', '144Hz Monitor', 'RGB Keyboard']),
-  ('PC Gaming 3', 'PC', 'Booked', 20000, ARRAY['RTX 4070', '165Hz Monitor', 'RGB Setup'])
+  -- Reguler: 4 PS4 devices @ Rp10.000/jam
+  ('PS4 Reguler 1', 'Reguler', 'Ready', 10000, ARRAY['PS4 Console', 'Controller', 'HD TV']),
+  ('PS4 Reguler 2', 'Reguler', 'In Use', 10000, ARRAY['PS4 Console', 'Controller', 'HD TV']),
+  ('PS4 Reguler 3', 'Reguler', 'Ready', 10000, ARRAY['PS4 Console', 'Controller', 'HD TV']),
+  ('PS4 Reguler 4', 'Reguler', 'Booked', 10000, ARRAY['PS4 Console', 'Controller', 'HD TV']),
+  -- VIP 1.A: PS4 Pro, Nintendo, Netflix @ Rp30.000/jam
+  ('PS4 Pro VIP 1.A', 'VIP 1.A', 'Ready', 30000, ARRAY['PS4 Pro', '4K TV', 'Wireless Controller', 'Headset']),
+  ('Nintendo VIP 1.A', 'VIP 1.A', 'Ready', 30000, ARRAY['Nintendo Switch', '4K TV', 'Joy-Con']),
+  ('Netflix VIP 1.A', 'VIP 1.A', 'Ready', 30000, ARRAY['4K TV', 'Streaming Access', 'Mini Fridge']),
+  -- VIP 1.B: PS4 Pro, Nintendo, Netflix @ Rp30.000/jam
+  ('PS4 Pro VIP 1.B', 'VIP 1.B', 'Ready', 30000, ARRAY['PS4 Pro', '4K TV', 'Wireless Controller', 'Headset']),
+  ('Nintendo VIP 1.B', 'VIP 1.B', 'In Use', 30000, ARRAY['Nintendo Switch', '4K TV', 'Joy-Con']),
+  ('Netflix VIP 1.B', 'VIP 1.B', 'Ready', 30000, ARRAY['4K TV', 'Streaming Access', 'Mini Fridge']),
+  -- VIP 2: PS5, Nintendo, Netflix @ Rp35.000/jam
+  ('PS5 VIP 2', 'VIP 2', 'Ready', 35000, ARRAY['PS5', '4K TV', 'Wireless Controller', 'Headset']),
+  ('Nintendo VIP 2', 'VIP 2', 'Ready', 35000, ARRAY['Nintendo Switch', '4K TV', 'Joy-Con']),
+  ('Netflix VIP 2', 'VIP 2', 'In Use', 35000, ARRAY['4K TV', 'Streaming Access', 'Mini Fridge', 'Sofa'])
 ON CONFLICT DO NOTHING;
 
 -- =============================================

@@ -23,7 +23,7 @@ Example:
 Halo admin K Gaming XCafe
 
 Saya ingin booking:
-- Device: PS5 VIP 1
+- Device: PS5 VIP 2
 - Jam: 19:00
 - Durasi: 3 Jam
 - Nama: Raken

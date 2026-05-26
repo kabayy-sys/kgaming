@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { X, Save } from 'lucide-react';
-import { cn } from '@/lib/utils';
+import { cn, categoryConfig } from '@/lib/utils';
 import type { Device, DeviceCategory, DeviceStatus } from '@/types';
 import { supabase } from '@/lib/supabase';
 
@@ -14,19 +14,26 @@ interface DeviceFormModalProps {
   actorId?: string;
 }
 
-const CATEGORIES: DeviceCategory[] = ['PS5', 'VIP', 'Regular', 'PC'];
+const CATEGORIES: DeviceCategory[] = ['Reguler', 'VIP 1.A', 'VIP 1.B', 'VIP 2'];
 const STATUSES: DeviceStatus[] = ['Ready', 'In Use', 'Booked', 'Pending', 'Maintenance'];
 
 export function DeviceFormModal({ device, onClose, onSaved, actorName, actorId }: DeviceFormModalProps) {
   const isEdit = !!device;
   const [name, setName] = useState(device?.name || '');
-  const [category, setCategory] = useState<DeviceCategory>(device?.category || 'Regular');
+  const [category, setCategory] = useState<DeviceCategory>(device?.category || 'Reguler');
   const [status, setStatus] = useState<DeviceStatus>(device?.status || 'Ready');
-  const [hourlyPrice, setHourlyPrice] = useState(device?.hourly_price?.toString() || '');
+  const [hourlyPrice, setHourlyPrice] = useState(device?.hourly_price?.toString() || categoryConfig[category].defaultPrice.toString());
   const [facilitiesStr, setFacilitiesStr] = useState(device?.facilities?.join(', ') || '');
   const [notes, setNotes] = useState(device?.notes || '');
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState('');
+
+  // Auto-set price when category changes (only for new devices)
+  useEffect(() => {
+    if (!isEdit && !device) {
+      setHourlyPrice(categoryConfig[category].defaultPrice.toString());
+    }
+  }, [category]);
 
   const handleSave = async () => {
     setError('');
@@ -114,21 +121,29 @@ export function DeviceFormModal({ device, onClose, onSaved, actorName, actorId }
             {/* Nama */}
             <div>
               <label className="block text-xs font-medium text-gaming-400 mb-1.5">Nama Device</label>
-              <input type="text" value={name} onChange={(e) => setName(e.target.value)} placeholder="PS5 VIP 1" className="input" />
+              <input type="text" value={name} onChange={(e) => setName(e.target.value)} placeholder="PS4 Reguler 1" className="input" />
             </div>
 
-            {/* Kategori */}
+            {/* Kategori dengan deskripsi */}
             <div>
-              <label className="block text-xs font-medium text-gaming-400 mb-1.5">Kategori</label>
-              <div className="flex gap-2">
-                {CATEGORIES.map((cat) => (
-                  <button key={cat} onClick={() => setCategory(cat)}
-                    className={cn('flex-1 rounded-lg py-2 text-xs font-medium transition-colors',
-                      category === cat ? 'bg-emerald-500 text-white' : 'bg-gaming-800 text-gaming-400 hover:bg-gaming-700'
-                    )}>
-                    {cat}
-                  </button>
-                ))}
+              <label className="block text-xs font-medium text-gaming-400 mb-2">Kategori</label>
+              <div className="grid grid-cols-2 gap-2">
+                {CATEGORIES.map((cat) => {
+                  const cfg = categoryConfig[cat];
+                  return (
+                    <button key={cat} onClick={() => setCategory(cat)}
+                      className={cn('rounded-xl p-3 text-left border-2 transition-all flex flex-col gap-1',
+                        category === cat
+                          ? 'border-emerald-500 bg-emerald-500/10'
+                          : 'border-gaming-700 bg-gaming-800/50 hover:border-gaming-600'
+                      )}>
+                      <span className="text-lg">{cfg.icon}</span>
+                      <span className="text-sm font-semibold text-gaming-100">{cfg.label}</span>
+                      <span className="text-[10px] text-gaming-500">{cfg.description}</span>
+                      <span className="text-[11px] font-medium text-gaming-400">Rp{cfg.defaultPrice.toLocaleString('id-ID')}/jam</span>
+                    </button>
+                  );
+                })}
               </div>
             </div>
 
