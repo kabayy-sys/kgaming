@@ -9,7 +9,7 @@ import { DeviceFormModal } from '@/components/device/device-form-modal';
 import { cn } from '@/lib/utils';
 import type { Device, DeviceCategory, DeviceStatus } from '@/types';
 import { supabase } from '@/lib/supabase';
-import { Plus, Pencil, Archive, Monitor, Search } from 'lucide-react';
+import { Plus, Pencil, Archive, Monitor, Search, RefreshCw, RotateCcw, AlertTriangle } from 'lucide-react';
 
 export const dynamic = 'force-dynamic';
 
@@ -31,6 +31,8 @@ export default function DevicesPage() {
   const [filterCat, setFilterCat] = useState<DeviceCategory | 'all'>('all');
   const [searchQuery, setSearchQuery] = useState('');
   const [confirmArchive, setConfirmArchive] = useState<string | null>(null);
+  const [confirmReset, setConfirmReset] = useState(false);
+  const [isResetting, setIsResetting] = useState(false);
 
   useEffect(() => {
     if (!authLoading && !isAuthenticated) {
@@ -46,6 +48,54 @@ export default function DevicesPage() {
     if (searchQuery && !d.name.toLowerCase().includes(searchQuery.toLowerCase())) return false;
     return true;
   });
+
+  const seedData = [
+    { name: 'PS4 Reguler 1', category: 'Reguler' as const, status: 'Ready' as const, hourly_price: 10000, facilities: ['PS4 Console', 'Controller', 'HD TV'] },
+    { name: 'PS4 Reguler 2', category: 'Reguler' as const, status: 'In Use' as const, hourly_price: 10000, facilities: ['PS4 Console', 'Controller', 'HD TV'] },
+    { name: 'PS4 Reguler 3', category: 'Reguler' as const, status: 'Ready' as const, hourly_price: 10000, facilities: ['PS4 Console', 'Controller', 'HD TV'] },
+    { name: 'PS4 Reguler 4', category: 'Reguler' as const, status: 'Booked' as const, hourly_price: 10000, facilities: ['PS4 Console', 'Controller', 'HD TV'] },
+    { name: 'PS4 Pro VIP 1.A', category: 'VIP 1.A' as const, status: 'Ready' as const, hourly_price: 30000, facilities: ['PS4 Pro', '4K TV', 'Wireless Controller', 'Headset'] },
+    { name: 'Nintendo VIP 1.A', category: 'VIP 1.A' as const, status: 'Ready' as const, hourly_price: 30000, facilities: ['Nintendo Switch', '4K TV', 'Joy-Con'] },
+    { name: 'Netflix VIP 1.A', category: 'VIP 1.A' as const, status: 'Ready' as const, hourly_price: 30000, facilities: ['4K TV', 'Streaming Access', 'Mini Fridge'] },
+    { name: 'PS4 Pro VIP 1.B', category: 'VIP 1.B' as const, status: 'Ready' as const, hourly_price: 30000, facilities: ['PS4 Pro', '4K TV', 'Wireless Controller', 'Headset'] },
+    { name: 'Nintendo VIP 1.B', category: 'VIP 1.B' as const, status: 'In Use' as const, hourly_price: 30000, facilities: ['Nintendo Switch', '4K TV', 'Joy-Con'] },
+    { name: 'Netflix VIP 1.B', category: 'VIP 1.B' as const, status: 'Ready' as const, hourly_price: 30000, facilities: ['4K TV', 'Streaming Access', 'Mini Fridge'] },
+    { name: 'PS5 VIP 2', category: 'VIP 2' as const, status: 'Ready' as const, hourly_price: 35000, facilities: ['PS5', '4K TV', 'Wireless Controller', 'Headset'] },
+    { name: 'Nintendo VIP 2', category: 'VIP 2' as const, status: 'Ready' as const, hourly_price: 35000, facilities: ['Nintendo Switch', '4K TV', 'Joy-Con'] },
+    { name: 'Netflix VIP 2', category: 'VIP 2' as const, status: 'In Use' as const, hourly_price: 35000, facilities: ['4K TV', 'Streaming Access', 'Mini Fridge', 'Sofa'] },
+  ];
+
+  const handleResetDatabase = async () => {
+    if (!user || user.role !== 'owner') return;
+    setIsResetting(true);
+    try {
+      // Hapus data lama
+      await supabase.from('activity_logs').delete().neq('id', '00000000-0000-0000-0000-000000000000');
+      await supabase.from('bookings').delete().neq('id', '00000000-0000-0000-0000-000000000000');
+      await supabase.from('devices').delete().neq('id', '00000000-0000-0000-0000-000000000000');
+
+      // Insert data baru
+      const { error } = await supabase.from('devices').insert(seedData);
+      if (error) throw error;
+
+      await supabase.from('activity_logs').insert({
+        action: 'device_created',
+        actor_id: user.id,
+        actor_name: user.display_name,
+        target_type: 'system',
+        target_id: null,
+        details: { message: 'Database devices di-reset dengan kategori baru' },
+      });
+
+      setConfirmReset(false);
+      fetchDevices();
+    } catch (err: any) {
+      console.error('Reset failed:', err);
+      alert('Gagal reset database: ' + err.message);
+    } finally {
+      setIsResetting(false);
+    }
+  };
 
   const handleArchive = async (deviceId: string) => {
     await supabase.from('devices').update({ is_archived: true, updated_at: new Date().toISOString() }).eq('id', deviceId);
@@ -108,6 +158,15 @@ export default function DevicesPage() {
               </button>
             ))}
           </div>
+
+          {/* Owner-only: Sync Database */}
+          {user?.role === 'owner' && (
+            <button onClick={() => setConfirmReset(true)} disabled={isResetting}
+              className="mt-3 w-full flex items-center justify-center gap-2 rounded-xl border border-amber-500/20 bg-amber-500/5 px-4 py-2.5 text-xs font-medium text-amber-400 hover:bg-amber-500/10 transition-colors">
+              <RefreshCw className={cn('h-3.5 w-3.5', isResetting && 'animate-spin')} />
+              {isResetting ? 'Mereset database...' : 'Sync Database — Reset ulang semua device'}
+            </button>
+          )}
         </div>
       </header>
 
@@ -161,6 +220,43 @@ export default function DevicesPage() {
           actorName={user?.display_name}
           actorId={user?.id}
         />
+      )}
+
+      {/* Reset Database Confirm */}
+      {confirmReset && user?.role === 'owner' && (
+        <>
+          <div className="fixed inset-0 z-50 bg-black/60" onClick={() => !isResetting && setConfirmReset(false)} />
+          <div className="fixed inset-x-4 bottom-20 z-50 animate-slide-up lg:inset-auto lg:top-1/2 lg:left-1/2 lg:-translate-x-1/2 lg:-translate-y-1/2 lg:w-full lg:max-w-sm">
+            <div className="rounded-2xl border border-amber-500/30 bg-gaming-950 p-5 shadow-elevated">
+              <div className="flex items-center gap-3 mb-3">
+                <div className="flex h-10 w-10 items-center justify-center rounded-full bg-amber-500/15">
+                  <AlertTriangle className="h-5 w-5 text-amber-400" />
+                </div>
+                <div>
+                  <p className="text-sm font-semibold text-gaming-100">Reset Database Devices?</p>
+                  <p className="text-[11px] text-gaming-500">Hanya untuk Owner</p>
+                </div>
+              </div>
+              <p className="text-xs text-gaming-500 mb-1">Tindakan ini akan:</p>
+              <ul className="text-xs text-gaming-500 mb-4 ml-4 list-disc space-y-0.5">
+                <li>Menghapus SEMUA device lama</li>
+                <li>Menghapus SEMUA booking & activity log</li>
+                <li>Insert ulang 13 device dengan kategori & harga baru</li>
+              </ul>
+              <div className="flex gap-2">
+                <button onClick={() => setConfirmReset(false)} disabled={isResetting} className="btn-secondary btn-sm flex-1">Batal</button>
+                <button onClick={handleResetDatabase} disabled={isResetting} className="flex-1 flex items-center justify-center gap-1.5 rounded-xl bg-amber-500/15 border border-amber-500/30 px-4 py-2 text-xs font-medium text-amber-400 hover:bg-amber-500/25 transition-colors disabled:opacity-50">
+                  {isResetting ? (
+                    <RefreshCw className="h-3.5 w-3.5 animate-spin" />
+                  ) : (
+                    <RotateCcw className="h-3.5 w-3.5" />
+                  )}
+                  {isResetting ? 'Mereset...' : 'Reset Database'}
+                </button>
+              </div>
+            </div>
+          </div>
+        </>
       )}
 
       {/* Archive Confirm */}
