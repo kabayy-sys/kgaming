@@ -1,47 +1,48 @@
 'use client';
 
-import { useState, useMemo } from 'react';
+import { useState, useEffect, useMemo, useCallback } from 'react';
 import { X, Send, Clock, User, CalendarDays } from 'lucide-react';
 import { cn } from '@/lib/utils';
-import type { Device } from '@/types';
+import { useBookingStore } from '@/stores/booking-store';
+import {
+  generateTimeSlots,
+  generateSlotsWithAvailability,
+  getBlockedSlots,
+  timeToMinutes,
+  formatIndonesianDate,
+  toDateString,
+  formatDuration,
+  formatTimeDisplay,
+  slotStatusColors,
+} from '@/lib/utils';
+import type { Device, TimeSlot, SlotStatus, Booking } from '@/types';
 
 const WA_NUMBER = '6282152425391';
-const DURATIONS = [1, 2, 3, 4, 5, 6, 8, 10, 12];
+const DURATIONS = [1, 2, 3, 4, 6, 8]; // in hours
+const ALL_SLOTS = generateTimeSlots();
 
-// Generate time slots from 07:00 to 23:00 (cafe operational hours)
-const TIME_SLOTS = Array.from({ length: 17 }, (_, i) => {
-  const hour = i + 7;
-  return `${hour.toString().padStart(2, '0')}:00`;
-});
+function getDateOptions(): Date[] {
+  const days = [];
+  for (let i = 0; i < 14; i++) {
+    const date = new Date();
+    date.setDate(date.getDate() + i);
+    days.push(date);
+  }
+  return days;
+}
 
-// Indonesian day/month names
 const DAYS = ['Min', 'Sen', 'Sel', 'Rab', 'Kam', 'Jum', 'Sab'];
-const MONTHS = ['Jan', 'Feb', 'Mar', 'Apr', 'Mei', 'Jun', 'Jul', 'Agu', 'Sep', 'Okt', 'Nov', 'Des'];
 
-function formatDate(date: Date): string {
-  return `${DAYS[date.getDay()]}, ${date.getDate()} ${MONTHS[date.getMonth()]} ${date.getFullYear()}`;
+function isToday(date: Date): boolean {
+  return toDateString(date) === toDateString(new Date());
 }
 
-function toDateString(date: Date): string {
-  return `${date.getFullYear()}-${(date.getMonth() + 1).toString().padStart(2, '0')}-${date.getDate().toString().padStart(2, '0')}`;
-}
-
-function generateWhatsAppMessage(params: {
-  deviceName: string;
-  date: string;
-  startTime: string;
-  durationHours: number;
-  customerName: string;
-}): string {
-  const { deviceName, date, startTime, durationHours, customerName } = params;
-  return `Halo admin K Gaming XCafe
-
-Saya ingin booking:
-- Device: ${deviceName}
-- Tanggal: ${date}
-- Jam: ${startTime}
-- Durasi: ${durationHours} Jam
-- Nama: ${customerName}`;
+function isPastTimeSlot(slotTime: string, date: Date): boolean {
+  const now = new Date();
+  if (toDateString(date) !== toDateString(now)) return false;
+  const slotMinutes = timeToMinutes(slotTime);
+  const nowMinutes = now.getHours() * 60 + now.getMinutes();
+  return slotMinutes <= nowMinutes;
 }
 
 interface BookingFormProps {
@@ -50,58 +51,119 @@ interface BookingFormProps {
 }
 
 export function BookingForm({ device, onClose }: BookingFormProps) {
+  const { fetchBookingsByDevice, createBooking } = useBookingStore();
   const [customerName, setCustomerName] = useState('');
   const [selectedDate, setSelectedDate] = useState(new Date());
-  const [selectedTime, setSelectedTime] = useState('');
-  const [duration, setDuration] = useState(2);
+  const [selectedStartTime, setSelectedStartTime] = useState<string | null>(null);
+  const [durationHours, setDurationHours] = useState(2);
+  const [slots, setSlots] = useState<TimeSlot[]>([]);
+  const [isLoadingSlots, setIsLoadingSlots] = useState(true);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
-  // Generate 7 upcoming days (today + 6)
-  const dateOptions = useMemo(() => {
-    const days = [];
-    for (let i = 0; i < 7; i++) {
-      const date = new Date();
-      date.setDate(date.getDate() + i);
-      days.push(date);
+  const dateOptions = useMemo(() => getDateOptions(), []);
+
+  const loadSlots = useCallback(async () => {
+    setIsLoadingSlots(true);
+    setSelectedStartTime(null);
+    try {
+      const existingBookings = await fetchBookingsByDevice(
+        device.id,
+        toDateString(selectedDate)
+      );
+      const formattedBookings = existingBookings.map((b: Booking) => ({
+        start_time: b.slot_start,
+        end_time: b.slot_end,
+        status: b.status,
+        id: b.id,
+      }));
+      const availableSlots = generateSlotsWithAvailability(ALL_SLOTS, formattedBookings);
+      setSlots(availableSlots);
+    } catch {
+      setSlots(ALL_SLOTS.map((t) => ({ time: t, status: 'available' as SlotStatus })));
+    } finally {
+      setIsLoadingSlots(false);
     }
-    return days;
-  }, []);
+  }, [device.id, selectedDate, fetchBookingsByDevice]);
 
-  // Set default time to next hour
-  useMemo(() => {
-    const now = new Date();
-    const nextHour = now.getHours() + 1;
-    if (nextHour >= 7 && nextHour <= 23) {
-      setSelectedTime(`${nextHour.toString().padStart(2, '0')}:00`);
-    } else {
-      setSelectedTime('10:00');
-    }
-    // Select today by default
-    setSelectedDate(new Date());
-  }, []);
+  useEffect(() => {
+    loadSlots();
+  }, [loadSlots]);
 
-  const handleSubmit = () => {
-    if (!customerName.trim() || !selectedTime || !selectedDate) return;
+  const blockedSlots = useMemo(() => {
+    if (!selectedStartTime) return [];
+    return getBlockedSlots(selectedStartTime, durationHours * 60);
+  }, [selectedStartTime, durationHours]);
 
-    const message = generateWhatsAppMessage({
-      deviceName: device.name,
-      date: formatDate(selectedDate),
-      startTime: selectedTime,
-      durationHours: duration,
-      customerName: customerName.trim(),
-    });
+  const getSlotDisplay = useCallback(
+    (slot: TimeSlot): { status: SlotStatus; isSelected: boolean } => {
+      const isInBlockedRange = selectedStartTime && blockedSlots.includes(slot.time);
+      const isStartSlot = slot.time === selectedStartTime;
+      const isPast = isPastTimeSlot(slot.time, selectedDate);
 
-    const waUrl = `https://wa.me/${WA_NUMBER}?text=${encodeURIComponent(message)}`;
-    window.open(waUrl, '_blank');
-    onClose();
+      if (isStartSlot) return { status: 'available', isSelected: true };
+      if (isInBlockedRange && slot.status === 'available') return { status: 'blocked', isSelected: false };
+      if (isPast && slot.status === 'available') return { status: 'blocked', isSelected: false };
+      return { status: slot.status, isSelected: false };
+    },
+    [selectedStartTime, blockedSlots, selectedDate]
+  );
+
+  const handleSlotClick = (slot: TimeSlot) => {
+    if (slot.status !== 'available') return;
+    const isPast = isPastTimeSlot(slot.time, selectedDate);
+    if (isPast) return;
+    setSelectedStartTime(slot.time);
+    setError(null);
   };
 
-  const isToday = (date: Date) => toDateString(date) === toDateString(new Date());
-  const isSelected = (date: Date) => toDateString(date) === toDateString(selectedDate);
+  const handleSubmit = async () => {
+    if (!customerName.trim() || !selectedStartTime) return;
+
+    const startMinutes = timeToMinutes(selectedStartTime);
+    const endMinutes = startMinutes + durationHours * 60;
+    const endHour = Math.floor(endMinutes / 60) % 24;
+    const endMin = endMinutes % 60;
+    const endTime = `${endHour.toString().padStart(2, '0')}:${endMin.toString().padStart(2, '0')}`;
+
+    setIsSubmitting(true);
+    setError(null);
+
+    try {
+      await createBooking({
+        device_id: device.id,
+        customer_name: customerName.trim(),
+        booking_date: toDateString(selectedDate),
+        slot_start: selectedStartTime,
+        slot_end: endTime,
+        duration_minutes: durationHours * 60,
+      });
+
+      const message = `Halo admin K Gaming XCafe
+
+Saya ingin booking:
+
+Device: ${device.name}
+Tanggal: ${formatIndonesianDate(selectedDate)}
+Jam: ${selectedStartTime}
+Durasi: ${durationHours} Jam
+Nama: ${customerName.trim()}`;
+
+      const waUrl = `https://wa.me/${WA_NUMBER}?text=${encodeURIComponent(message)}`;
+      window.open(waUrl, '_blank');
+      onClose();
+    } catch (err) {
+      setError('Gagal membuat booking. Silakan coba lagi.');
+      console.error('Failed to submit booking:', err);
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
 
   return (
     <>
       <div className="fixed inset-0 z-50 bg-black/60" onClick={onClose} />
-      <div className="fixed inset-x-0 bottom-0 z-50 animate-slide-up lg:inset-auto lg:top-1/2 lg:left-1/2 lg:-translate-x-1/2 lg:-translate-y-1/2 lg:w-full lg:max-w-md">
+      <div className="fixed inset-x-0 bottom-0 z-50 animate-slide-up lg:inset-auto lg:top-1/2 lg:left-1/2 lg:-translate-x-1/2 lg:-translate-y-1/2 lg:w-full lg:max-w-lg">
         <div className="rounded-t-2xl lg:rounded-2xl border border-gaming-700 bg-gaming-950 p-5 lg:p-6 shadow-elevated max-h-[90vh] overflow-y-auto">
           {/* Header */}
           <div className="flex items-center justify-between mb-5">
@@ -137,7 +199,7 @@ export function BookingForm({ device, onClose }: BookingFormProps) {
               </div>
             </div>
 
-            {/* Tanggal - Quick Pick */}
+            {/* Tanggal */}
             <div>
               <label className="block text-xs font-medium text-gaming-400 mb-2">
                 <span className="inline-flex items-center gap-1.5">
@@ -147,16 +209,16 @@ export function BookingForm({ device, onClose }: BookingFormProps) {
               </label>
               <div className="flex gap-1.5 overflow-x-auto no-scrollbar pb-1">
                 {dateOptions.map((date, i) => {
-                  const days = ['Min', 'Sen', 'Sel', 'Rab', 'Kam', 'Jum', 'Sab'];
-                  const dayName = days[date.getDay()];
+                  const dayName = DAYS[date.getDay()];
                   const dateNum = date.getDate();
+                  const isSel = toDateString(date) === toDateString(selectedDate);
                   return (
                     <button
                       key={i}
                       onClick={() => setSelectedDate(date)}
                       className={cn(
                         'flex flex-col items-center gap-0.5 rounded-xl px-3.5 py-2 min-w-[56px] transition-colors flex-shrink-0',
-                        isSelected(date)
+                        isSel
                           ? 'bg-emerald-500 text-white'
                           : 'bg-gaming-800 text-gaming-400 hover:bg-gaming-700'
                       )}
@@ -172,82 +234,143 @@ export function BookingForm({ device, onClose }: BookingFormProps) {
               </div>
             </div>
 
-            {/* Jam - Quick Pick Grid */}
+            {/* Time Slots */}
             <div>
               <label className="block text-xs font-medium text-gaming-400 mb-2">
                 <span className="inline-flex items-center gap-1.5">
                   <Clock className="h-3.5 w-3.5" />
-                  Pilih Jam
+                  Pilih Jam Mulai
                 </span>
               </label>
-              <div className="grid grid-cols-4 gap-1.5">
-                {TIME_SLOTS.map((time) => {
-                  const isAM = parseInt(time) < 12;
-                  const display = isAM ? `${time}` : `${time}`;
-                  return (
-                    <button
-                      key={time}
-                      onClick={() => setSelectedTime(time)}
-                      className={cn(
-                        'rounded-lg py-2.5 text-xs font-medium transition-colors',
-                        selectedTime === time
-                          ? 'bg-emerald-500 text-white'
-                          : 'bg-gaming-800 text-gaming-400 hover:bg-gaming-700'
-                      )}
-                    >
-                      {display}
-                    </button>
-                  );
-                })}
-              </div>
+              {isLoadingSlots ? (
+                <div className="grid grid-cols-4 gap-1.5">
+                  {Array.from({ length: 12 }).map((_, i) => (
+                    <div key={i} className="h-10 rounded-lg skeleton" />
+                  ))}
+                </div>
+              ) : (
+                <div className="grid grid-cols-4 gap-1.5 max-h-48 overflow-y-auto no-scrollbar pr-1">
+                  {slots.map((slot) => {
+                    const display = getSlotDisplay(slot);
+                    const isPast = isPastTimeSlot(slot.time, selectedDate);
+                    const canClick = slot.status === 'available' && !isPast;
+
+                    let colors = slotStatusColors[slot.status];
+                    if (display.isSelected) {
+                      colors = { bg: 'bg-emerald-500', text: 'text-white', border: 'border-emerald-500' };
+                    } else if (slot.status === 'available' && display.status === 'blocked') {
+                      colors = slotStatusColors.blocked;
+                    }
+
+                    return (
+                      <button
+                        key={slot.time}
+                        onClick={() => handleSlotClick(slot)}
+                        disabled={!canClick}
+                        className={cn(
+                          'rounded-lg py-2.5 text-xs font-medium transition-all border',
+                          colors.bg,
+                          colors.text,
+                          colors.border,
+                          display.isSelected && 'ring-2 ring-emerald-400 ring-offset-1 ring-offset-gaming-950 scale-105',
+                          canClick && 'hover:bg-emerald-500/20 hover:text-emerald-400 cursor-pointer',
+                          !canClick && 'cursor-not-allowed'
+                        )}
+                      >
+                        {formatTimeDisplay(slot.time)}
+                        {slot.status === 'booked' && ' ❌'}
+                        {slot.status === 'pending' && ' ⏳'}
+                      </button>
+                    );
+                  })}
+                </div>
+              )}
             </div>
 
-            {/* Durasi */}
-            <div>
-              <label className="block text-xs font-medium text-gaming-400 mb-1.5">Durasi</label>
-              <div className="grid grid-cols-5 gap-1.5">
-                {DURATIONS.map((h) => (
-                  <button
-                    key={h}
-                    onClick={() => setDuration(h)}
-                    className={cn(
-                      'rounded-lg py-2 text-xs font-medium transition-colors',
-                      duration === h
-                        ? 'bg-emerald-500 text-white'
-                        : 'bg-gaming-800 text-gaming-400 hover:bg-gaming-700'
-                    )}
-                  >
-                    {h}j
-                  </button>
-                ))}
+            {/* Durasi - only show when time selected */}
+            {selectedStartTime && (
+              <div>
+                <label className="block text-xs font-medium text-gaming-400 mb-1.5">Durasi</label>
+                <div className="grid grid-cols-6 gap-1.5">
+                  {DURATIONS.map((h) => {
+                    const endMin = timeToMinutes(selectedStartTime) + h * 60;
+                    const endH = Math.floor(endMin / 60) % 24;
+                    const endM = endMin % 60;
+                    const endTime = `${endH.toString().padStart(2, '0')}:${endM.toString().padStart(2, '0')}`;
+                    return (
+                      <button
+                        key={h}
+                        onClick={() => {
+                          setDurationHours(h);
+                          setError(null);
+                        }}
+                        className={cn(
+                          'rounded-lg py-2 text-xs font-medium transition-colors',
+                          durationHours === h
+                            ? 'bg-emerald-500 text-white'
+                            : 'bg-gaming-800 text-gaming-400 hover:bg-gaming-700'
+                        )}
+                      >
+                        {h}j
+                        <span className="block text-[9px] opacity-60">{endTime}</span>
+                      </button>
+                    );
+                  })}
+                </div>
               </div>
-            </div>
+            )}
 
-            {/* Estimated Price */}
-            <div className="rounded-xl bg-gaming-800/50 border border-gaming-700/50 p-3 text-center">
-              <p className="text-xs text-gaming-500 mb-0.5">Estimasi total</p>
-              <p className="text-lg font-bold text-emerald-400">
-                Rp{(device.hourly_price * duration).toLocaleString('id-ID')}
-              </p>
-            </div>
+            {/* Selected Info & Price */}
+            {selectedStartTime && (
+              <div className="rounded-xl bg-gaming-800/50 border border-gaming-700/50 p-3 space-y-1.5">
+                <div className="flex justify-between text-xs text-gaming-400">
+                  <span>Jam mulai</span>
+                  <span className="text-gaming-200 font-medium">{formatTimeDisplay(selectedStartTime)}</span>
+                </div>
+                <div className="flex justify-between text-xs text-gaming-400">
+                  <span>Durasi</span>
+                  <span className="text-gaming-200 font-medium">{formatDuration(durationHours * 60)}</span>
+                </div>
+                <div className="border-t border-gaming-700/50 pt-1.5 flex justify-between text-sm">
+                  <span className="text-gaming-400">Estimasi total</span>
+                  <span className="text-emerald-400 font-bold">
+                    Rp{(device.hourly_price * durationHours).toLocaleString('id-ID')}
+                  </span>
+                </div>
+              </div>
+            )}
+
+            {/* Error */}
+            {error && (
+              <p className="text-xs text-rose-400 text-center bg-rose-500/10 rounded-lg py-2">{error}</p>
+            )}
 
             {/* Submit */}
             <button
               onClick={handleSubmit}
-              disabled={!customerName.trim() || !selectedTime}
+              disabled={!customerName.trim() || !selectedStartTime || isSubmitting}
               className={cn(
                 'btn w-full',
-                customerName.trim() && selectedTime
+                customerName.trim() && selectedStartTime && !isSubmitting
                   ? 'btn-primary'
                   : 'opacity-50 cursor-not-allowed bg-gaming-800 text-gaming-500'
               )}
             >
-              <Send className="h-4 w-4" />
-              Kirim via WhatsApp
+              {isSubmitting ? (
+                <span className="flex items-center gap-2">
+                  <span className="h-4 w-4 rounded-full border-2 border-white/30 border-t-white animate-spin" />
+                  Memproses...
+                </span>
+              ) : (
+                <>
+                  <Send className="h-4 w-4" />
+                  Kirim via WhatsApp
+                </>
+              )}
             </button>
 
             <p className="text-center text-[11px] text-gaming-600">
-              Booking akan dikirim via WhatsApp untuk persetujuan staff
+              Booking akan disimpan dan dikirim via WhatsApp untuk persetujuan staff
             </p>
           </div>
         </div>

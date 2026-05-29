@@ -34,12 +34,12 @@ export function DeviceCard({ device, onBook, onStatusChange, compact, isPublic }
   const icon = categoryIcons[device.category] || '🖥️';
   const [showStatusPicker, setShowStatusPicker] = useState(false);
 
-  const isReady = device.status === 'Ready';
+  const isBookable = device.status !== 'Maintenance';
 
   const handleClick = () => {
     if (isPublic) {
-      // Public: only Ready devices can book
-      if (isReady && onBook) {
+      // Public: any non-maintenance device can be booked (slot-based)
+      if (isBookable && onBook) {
         onBook(device);
       }
     } else {
@@ -57,7 +57,7 @@ export function DeviceCard({ device, onBook, onStatusChange, compact, isPublic }
 
   return (
     <>
-      <div className="card card-hover overflow-hidden" onClick={isPublic && isReady ? handleClick : undefined}>
+      <div className="card card-hover overflow-hidden" onClick={isPublic && isBookable ? handleClick : undefined}>
         <div className="p-4 lg:p-5">
           {/* Top Row */}
           <div className="flex items-start justify-between gap-3">
@@ -104,18 +104,18 @@ export function DeviceCard({ device, onBook, onStatusChange, compact, isPublic }
 
           {/* Action Button */}
           {isPublic ? (
-            /* PUBLIC: Book Now only for Ready devices */
+            /* PUBLIC: Book via slot selection (V2) */
             <button
-              onClick={() => isReady && onBook?.(device)}
-              disabled={!isReady}
+              onClick={() => isBookable && onBook?.(device)}
+              disabled={!isBookable}
               className={cn(
                 'btn mt-3 w-full text-sm transition-all',
-                isReady
+                isBookable
                   ? 'bg-emerald-500 text-white hover:bg-emerald-600'
                   : 'bg-gaming-800 text-gaming-600 cursor-not-allowed opacity-60'
               )}
             >
-              {isReady ? 'Book Now' : device.status === 'In Use' ? 'Sedang Dipakai' : `Status: ${s.label}`}
+              {isBookable ? 'Lihat Jadwal & Booking' : device.status === 'In Use' ? 'Sedang Dipakai' : `Status: ${s.label}`}
             </button>
           ) : (
             /* STAFF/OWNER: tap to change status */

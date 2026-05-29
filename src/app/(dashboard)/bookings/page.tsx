@@ -161,7 +161,7 @@ export default function BookingsPage() {
                     </div>
                     <div className="flex items-center gap-2 text-xs text-gaming-500">
                       <Clock className="h-3.5 w-3.5 flex-shrink-0" />
-                      <span>{formatDateTime(booking.start_time)} • {formatDuration(booking.duration_hours)}</span>
+                      <span>{booking.booking_date ? formatDateTime(booking.booking_date + 'T' + (booking.slot_start || booking.start_time)) : formatDateTime(booking.start_time)} • {formatDuration(booking.duration_minutes || 120)}</span>
                     </div>
                   </div>
 
@@ -195,7 +195,7 @@ export default function BookingsPage() {
                   )}
 
                   <p className="mt-2 text-[10px] text-gaming-600">
-                    {new Date(booking.created_at).toLocaleDateString('id-ID', {
+                    Dibuat {new Date(booking.created_at).toLocaleDateString('id-ID', {
                       weekday: 'long', day: 'numeric', month: 'short',
                       hour: '2-digit', minute: '2-digit',
                     })}

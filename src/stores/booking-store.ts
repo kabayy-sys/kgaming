@@ -10,6 +10,15 @@ interface BookingState {
   setLoading: (loading: boolean) => void;
   fetchBookings: () => Promise<void>;
   fetchPendingCount: () => Promise<void>;
+  fetchBookingsByDevice: (deviceId: string, date: string) => Promise<Booking[]>;
+  createBooking: (params: {
+    device_id: string;
+    customer_name: string;
+    booking_date: string;
+    slot_start: string;
+    slot_end: string;
+    duration_minutes: number;
+  }) => Promise<void>;
   approveBooking: (bookingId: string, staffId: string) => Promise<void>;
   rejectBooking: (bookingId: string, staffId: string) => Promise<void>;
   completeBooking: (bookingId: string) => Promise<void>;
@@ -53,6 +62,45 @@ export const useBookingStore = create<BookingState>((set, get) => ({
       set({ pendingCount: count || 0 });
     } catch (error) {
       console.error('Failed to fetch pending count:', error);
+    }
+  },
+
+  fetchBookingsByDevice: async (deviceId, date) => {
+    try {
+      const { data, error } = await supabase
+        .from('bookings')
+        .select('*')
+        .eq('device_id', deviceId)
+        .eq('booking_date', date)
+        .in('status', ['pending', 'approved'])
+        .order('slot_start', { ascending: true });
+
+      if (error) throw error;
+      return data || [];
+    } catch (error) {
+      console.error('Failed to fetch device bookings:', error);
+      return [];
+    }
+  },
+
+  createBooking: async ({ device_id, customer_name, booking_date, slot_start, slot_end, duration_minutes }) => {
+    const { error } = await supabase
+      .from('bookings')
+      .insert({
+        device_id,
+        customer_name,
+        booking_date,
+        slot_start,
+        slot_end,
+        duration_minutes,
+        status: 'pending',
+        created_at: new Date().toISOString(),
+        updated_at: new Date().toISOString(),
+      });
+
+    if (error) {
+      console.error('Failed to create booking:', error);
+      throw error;
     }
   },
 

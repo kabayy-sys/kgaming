@@ -22,16 +22,27 @@ export interface Device {
   updated_at: string;
 }
 
-// ---- Booking Types ----
+// ---- V2 Slot-based Booking Types ----
 export type BookingStatus = 'pending' | 'approved' | 'rejected' | 'expired' | 'completed';
+export type SlotStatus = 'available' | 'booked' | 'pending' | 'blocked';
+
+export interface TimeSlot {
+  time: string; // HH:mm format
+  status: SlotStatus;
+  bookingId?: string;
+}
 
 export interface Booking {
   id: string;
   device_id: string;
   customer_name: string;
   customer_phone: string | null;
-  start_time: string;
-  duration_hours: number;
+  booking_date: string; // YYYY-MM-DD
+  start_time: string; // TIMESTAMPTZ (old field)
+  duration_hours: number; // old field
+  slot_start: string; // HH:mm (V2 field)
+  slot_end: string; // HH:mm (V2 field)
+  duration_minutes: number;
   status: BookingStatus;
   notes: string | null;
   approved_by: string | null;
@@ -101,6 +112,7 @@ export interface DeviceCardProps {
   onBook?: (device: Device) => void;
   onStatusChange?: (device: Device, status: DeviceStatus) => void;
   compact?: boolean;
+  isPublic?: boolean;
 }
 
 // ---- Dashboard Stats ----
