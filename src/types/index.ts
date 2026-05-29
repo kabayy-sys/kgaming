@@ -66,6 +66,22 @@ export interface StaffProfile {
   updated_at: string;
 }
 
+// ---- Slot Override Types ----
+export type SlotOverrideStatus = 'maintenance' | 'in_use';
+
+export interface SlotOverride {
+  id: string;
+  device_id: string;
+  slot_start: string; // HH:mm
+  slot_end: string; // HH:mm
+  override_date: string; // YYYY-MM-DD
+  status: SlotOverrideStatus;
+  staff_id: string | null;
+  notes: string | null;
+  created_at: string;
+  updated_at: string;
+}
+
 // ---- Activity Log Types ----
 export type ActivityAction =
   | 'device_status_change'
@@ -81,7 +97,11 @@ export type ActivityAction =
   | 'staff_created'
   | 'staff_disabled'
   | 'password_reset'
-  | 'shift_note_created';
+  | 'shift_note_created'
+  | 'slot_updated'
+  | 'session_started'
+  | 'maintenance_enabled'
+  | 'slot_cleared';
 
 export interface ActivityLog {
   id: string;

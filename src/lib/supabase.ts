@@ -51,6 +51,7 @@ export const supabase = createSupabaseClient();
 export const DEVICES_CHANNEL = 'devices-channel';
 export const BOOKINGS_CHANNEL = 'bookings-channel';
 export const ACTIVITY_CHANNEL = 'activity-channel';
+export const SLOT_OVERRIDES_CHANNEL = 'slot-overrides-channel';
 
 export function getRealtimeChannel(channelName: string) {
   return supabase.channel(channelName);

@@ -35,6 +35,10 @@ const actionConfig: Record<ActivityAction, { icon: React.ReactNode; color: strin
   staff_disabled: { icon: <UserX className="h-4 w-4" />, color: 'text-rose-400', label: 'Staff Disabled' },
   password_reset: { icon: <KeyRound className="h-4 w-4" />, color: 'text-yellow-400', label: 'Password Reset' },
   shift_note_created: { icon: <FileText className="h-4 w-4" />, color: 'text-blue-400', label: 'Shift Note' },
+  slot_updated: { icon: <CalendarCheck className="h-4 w-4" />, color: 'text-purple-400', label: 'Slot Updated' },
+  session_started: { icon: <Monitor className="h-4 w-4" />, color: 'text-orange-400', label: 'Session Started' },
+  maintenance_enabled: { icon: <AlertCircle className="h-4 w-4" />, color: 'text-rose-400', label: 'Maintenance Enabled' },
+  slot_cleared: { icon: <Monitor className="h-4 w-4" />, color: 'text-gaming-400', label: 'Slot Cleared' },
 };
 
 export const dynamic = 'force-dynamic';
