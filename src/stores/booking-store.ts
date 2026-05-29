@@ -1,3 +1,5 @@
+'use client';
+
 import { create } from 'zustand';
 import { supabase, BOOKINGS_CHANNEL } from '@/lib/supabase';
 import type { Booking, BookingStatus } from '@/types';
@@ -84,6 +86,8 @@ export const useBookingStore = create<BookingState>((set, get) => ({
   },
 
   createBooking: async ({ device_id, customer_name, booking_date, slot_start, slot_end, duration_minutes }) => {
+    // Also set the legacy required columns (start_time, duration_hours) so the insert doesn't fail
+    const startTimeISO = `${booking_date}T${slot_start}:00+07:00`;
     const { error } = await supabase
       .from('bookings')
       .insert({
@@ -93,6 +97,8 @@ export const useBookingStore = create<BookingState>((set, get) => ({
         slot_start,
         slot_end,
         duration_minutes,
+        start_time: startTimeISO,
+        duration_hours: Math.ceil(duration_minutes / 60),
         status: 'pending',
         created_at: new Date().toISOString(),
         updated_at: new Date().toISOString(),

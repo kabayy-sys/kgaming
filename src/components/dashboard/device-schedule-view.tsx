@@ -4,7 +4,7 @@ import { useState, useCallback, useEffect } from 'react';
 import { useSlotStore } from '@/stores/slot-store';
 import { useAuthStore } from '@/stores/auth-store';
 import { supabase } from '@/lib/supabase';
-import { cn, formatTimeDisplay } from '@/lib/utils';
+import { cn, formatTimeDisplay, timeToMinutes } from '@/lib/utils';
 import type { DeviceSchedule, SlotAvailability } from '@/stores/slot-store';
 import type { ActivityAction } from '@/types';
 
@@ -412,10 +412,15 @@ export function DeviceScheduleView() {
             details: { time: slot.time, device_id: deviceId },
           });
         } else if (action === 'mark_maintenance') {
+          const startMin = timeToMinutes(slot.time);
+          const endMin = startMin + 30; // one slot interval
+          const endH = Math.floor(endMin / 60) % 24;
+          const endM = endMin % 60;
+          const slotEnd = `${endH.toString().padStart(2, '0')}:${endM.toString().padStart(2, '0')}`;
           await addOverride({
             device_id: deviceId,
             slot_start: slot.time,
-            slot_end: slot.time,
+            slot_end: slotEnd,
             override_date: selectedDate,
             status: 'maintenance',
             staff_id: actorId,
@@ -430,10 +435,15 @@ export function DeviceScheduleView() {
             details: { time: slot.time, device_id: deviceId, status: 'maintenance' },
           });
         } else if (action === 'mark_used') {
+          const startMin = timeToMinutes(slot.time);
+          const endMin = startMin + 30; // one slot interval
+          const endH = Math.floor(endMin / 60) % 24;
+          const endM = endMin % 60;
+          const slotEnd = `${endH.toString().padStart(2, '0')}:${endM.toString().padStart(2, '0')}`;
           await addOverride({
             device_id: deviceId,
             slot_start: slot.time,
-            slot_end: slot.time,
+            slot_end: slotEnd,
             override_date: selectedDate,
             status: 'in_use',
             staff_id: actorId,
