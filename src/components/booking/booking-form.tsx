@@ -42,6 +42,14 @@ function isPastTimeSlot(slotTime: string, date: Date): boolean {
   if (toDateString(date) !== toDateString(now)) return false;
   const slotMinutes = timeToMinutes(slotTime);
   const nowMinutes = now.getHours() * 60 + now.getMinutes();
+  // Post-midnight slots (00:00 - 01:00) are in the NEXT operational day.
+  // If the current time is past 01:00, these slots are not "past" — they are future for today's schedule.
+  // Only mark as past if current time is already past that slot AND we're past 01:00 AM
+  if (slotMinutes < 60) {
+    // Slot is in early morning (00:00 - 01:00)
+    // If current time is >= 01:00, this slot is actually in the future for today's schedule
+    return nowMinutes > slotMinutes && nowMinutes >= 60;
+  }
   return slotMinutes <= nowMinutes;
 }
 

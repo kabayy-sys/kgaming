@@ -50,16 +50,20 @@ export const statusLabels: Record<DeviceStatus, string> = {
 // ---- V2 Slot Generation ----
 // Operational hours: 10:00 - 01:00 (next day)
 const OPERATIONAL_START_HOUR = 10;
-const OPERATIONAL_END_HOUR = 25; // 01:00 next day = 25 in 24h format
+const OPERATIONAL_END_HOUR = 26; // 01:00 next day = 25 in 24h format, need 26 to include 25:00
 const SLOT_INTERVAL_MINUTES = 30;
 
 /**
  * Generate all possible time slots for a given date
+ * Generates 30-minute interval slots from 10:00 to 01:00 (next day)
+ * Final slot is 01:00 (no 01:30)
  */
 export function generateTimeSlots(): string[] {
   const slots: string[] = [];
   for (let hour = OPERATIONAL_START_HOUR; hour < OPERATIONAL_END_HOUR; hour++) {
-    for (let minute = 0; minute < 60; minute += SLOT_INTERVAL_MINUTES) {
+    // For the last hour (01:00 = hour 25), only generate minute 0 to avoid 01:30
+    const maxMinute = hour === OPERATIONAL_END_HOUR - 1 ? 1 : 60;
+    for (let minute = 0; minute < maxMinute; minute += SLOT_INTERVAL_MINUTES) {
       const displayHour = hour >= 24 ? hour - 24 : hour;
       slots.push(
         `${displayHour.toString().padStart(2, '0')}:${minute.toString().padStart(2, '0')}`
@@ -121,6 +125,7 @@ export function formatTimeDisplay(time: string): string {
 
 /**
  * Generate slots with availability status based on existing bookings
+ * Handles midnight-crossing bookings correctly (e.g., 23:00 -> 01:00)
  */
 export function generateSlotsWithAvailability(
   allSlots: string[],
@@ -130,10 +135,12 @@ export function generateSlotsWithAvailability(
   const unavailableSlots = new Map<string, { status: SlotStatus; bookingId: string }>();
 
   for (const booking of existingBookings) {
-    const blockedSlots = getBlockedSlots(
-      booking.start_time,
-      timeToMinutes(booking.end_time) - timeToMinutes(booking.start_time)
-    );
+    let durationMinutes = timeToMinutes(booking.end_time) - timeToMinutes(booking.start_time);
+    // Handle midnight crossing: if end_time < start_time, add 24h (1440 min)
+    if (durationMinutes < 0) {
+      durationMinutes += 24 * 60;
+    }
+    const blockedSlots = getBlockedSlots(booking.start_time, durationMinutes);
     const slotStatus: SlotStatus = booking.status === 'approved' ? 'booked' : 'pending';
     for (const slot of blockedSlots) {
       unavailableSlots.set(slot, { status: slotStatus, bookingId: booking.id });
